@@ -1,0 +1,222 @@
+/* Importa as fontes Roboto e Playfair Display do Google Fonts */
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap");
+
+/* Reseta box model e bordas */
+*,
+::before,
+::after {
+  box-sizing: border-box;
+  border-width: 0;
+  border-style: solid;
+  border-color: #e5e7eb;
+}
+
+/* Estilos base para html e host */
+html,
+:host {
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  -moz-tab-size: 4;
+  -o-tab-size: 4;
+  tab-size: 4;
+  font-family: Roboto, sans-serif;
+  font-feature-settings: normal;
+  font-variation-settings: normal;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Remove margem padrão do body */
+body {
+  margin: 0;
+  line-height: inherit;
+}
+
+/* Reseta estilos de títulos */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+/* Herda estilos em links */
+a {
+  color: inherit;
+  text-decoration: inherit;
+}
+
+/* Garante imagens e vídeos responsivos */
+img,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Esconde elementos com atributo hidden */
+[hidden] {
+  display: none;
+}
+
+/* Define largura total para container */
+.container {
+  width: 100%;
+}
+
+/* Define larguras máximas do container por breakpoint */
+@media (min-width: 640px) {
+  .container {
+    max-width: 640px;
+  }
+}
+@media (min-width: 768px) {
+  .container {
+    max-width: 768px;
+  }
+}
+@media (min-width: 1024px) {
+  .container {
+    max-width: 1024px;
+  }
+}
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1280px;
+  }
+}
+@media (min-width: 1536px) {
+  .container {
+    max-width: 1536px;
+  }
+}
+
+/* Centraliza horizontalmente */
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Ativa display grid */
+.grid {
+  display: grid;
+}
+
+/* Altura automática */
+.h-auto {
+  height: auto;
+}
+
+/* Altura igual à tela */
+.h-screen {
+  height: 100vh;
+}
+
+/* Largura máxima para tela média */
+.max-w-screen-md {
+  max-width: 768px;
+}
+
+/* Centraliza conteúdo verticalmente */
+.content-center {
+  align-content: center;
+}
+
+/* Centraliza itens horizontalmente no grid */
+.justify-items-center {
+  justify-items: center;
+}
+
+/* Espaçamento entre itens do grid */
+.gap-5 {
+  gap: 1.25rem;
+}
+
+/* Borda totalmente arredondada */
+.rounded-full {
+  border-radius: 9999px;
+}
+
+/* Cor de fundo cinza escuro */
+.bg-gray-800 {
+  background-color: rgba(31, 41, 55, 1);
+}
+
+/* Cor de fundo personalizada (amarelo) */
+.bg-primary {
+  background-color: rgba(244, 161, 23, 1);
+}
+
+/* Padding horizontal médio */
+.px-5 {
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+/* Padding horizontal maior */
+.px-7 {
+  padding-left: 1.75rem;
+  padding-right: 1.75rem;
+}
+
+/* Padding vertical médio */
+.py-4 {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+/* Centraliza texto */
+.text-center {
+  text-align: center;
+}
+
+/* Aplica fonte Roboto */
+.font-sans {
+  font-family: Roboto, sans-serif;
+}
+
+/* Aplica fonte Playfair Display */
+.font-serif {
+  font-family: Playfair Display, serif;
+}
+
+/* Tamanho de fonte grande (título) */
+.text-4xl {
+  font-size: 2.25rem;
+  line-height: 2.5rem;
+}
+
+/* Tamanho de fonte médio */
+.text-lg {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+}
+
+/* Peso da fonte semi-negrito */
+.font-semibold {
+  font-weight: 600;
+}
+
+/* Texto em caixa alta */
+.uppercase {
+  text-transform: uppercase;
+}
+
+/* Espaçamento entre letras */
+.tracking-wide {
+  letter-spacing: 0.025em;
+}
+
+/* Cor do texto branca */
+.text-white {
+  color: rgba(255, 255, 255, 1);
+}
+
+/* Remove padding horizontal em telas pequenas */
+@media (min-width: 640px) {
+  .sm\:px-0 {
+    padding-left: 0px;
+    padding-right: 0px;
+  }
+}
