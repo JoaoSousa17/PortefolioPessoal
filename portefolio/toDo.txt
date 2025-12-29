@@ -1,0 +1,12 @@
+Organizar codigo;✅
+Escrever textos;
+Criar Autenticação e páginas de admin;✅
+Pensar no modelo para os idiomas;
+EM admin corrigir na secção do profile o CV e os textos iniciais;
+
+---
+Implementar idiomas;
+Retomar Monitor skills;
+Download CV;✅
+Pagina 404 divertida;✅
+qlqr coisa escondida no codigo da pagina;✅
