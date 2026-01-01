@@ -1,0 +1,14 @@
+BEGIN:VCARD
+VERSION:3.0
+FN:João Sousa
+N:Sousa;João;;;
+TITLE:
+EMAIL;TYPE=INTERNET:joaosousa@example.com
+TEL;TYPE=CELL:+351912345678
+URL:https://joaosousa.space
+URL;TYPE=WORK:https://github.com/JoaoSousa17
+URL;TYPE=WORK:https://www.linkedin.com/in/joaosousaa
+NOTE:Developer
+PHOTO;VALUE=URL:https://joaosousa.space/images/avatar.jpg
+REV:2025-12-30T02:00:00Z
+END:VCARD

@@ -143,7 +143,7 @@ export default function BlogPostPage() {
             </Button>
 
             {/* Title */}
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight drop-shadow-lg">
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight drop-shadow-lg text-justify">
               {post.title}
             </h1>
 
@@ -206,7 +206,7 @@ export default function BlogPostPage() {
               {/* Excerpt */}
               {post.excerpt && (
                 <Card className="bg-gradient-to-br from-red-50 to-white border-l-4 border-red-700 p-6 md:p-8 mb-12 shadow-lg">
-                  <p className="text-xl md:text-2xl text-slate-700 leading-relaxed italic font-medium">
+                  <p className="text-xl md:text-2xl text-slate-700 leading-relaxed italic font-medium text-justify">
                     {post.excerpt}
                   </p>
                 </Card>
@@ -220,7 +220,7 @@ export default function BlogPostPage() {
                       // Check if it's a heading (starts with ##)
                       if (paragraph.trim().startsWith('## ')) {
                         return (
-                          <h2 key={index} className="text-3xl font-bold text-slate-900 mt-10 mb-6 first:mt-0">
+                          <h2 key={index} className="text-3xl font-bold text-slate-900 mt-10 mb-6 first:mt-0 text-justify">
                             {paragraph.replace('## ', '')}
                           </h2>
                         )
@@ -228,7 +228,7 @@ export default function BlogPostPage() {
                       // Regular paragraph
                       if (paragraph.trim()) {
                         return (
-                          <p key={index} className="mb-6 text-lg">
+                          <p key={index} className="mb-6 text-lg text-justify">
                             {paragraph}
                           </p>
                         )

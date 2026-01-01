@@ -94,10 +94,10 @@ export function SchoolsSection() {
           </div>
         ) : (
           <div className="relative">
-            {/* Vertical timeline line */}
-            <div className="absolute left-8 md:left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-red-700 via-slate-700 to-red-700 transform md:-translate-x-1/2" />
+            {/* Vertical timeline line - thinner and left-aligned on mobile */}
+            <div className="absolute left-4 sm:left-6 md:left-1/2 top-0 bottom-0 w-0.5 sm:w-1 bg-gradient-to-b from-red-700 via-slate-700 to-red-700 md:transform md:-translate-x-1/2" />
             
-            <div className="space-y-12">
+            <div className="space-y-8 sm:space-y-12">
               {schools.map((school, index) => {
                 const isExpanded = expandedSchools.has(school.id)
                 const isEven = index % 2 === 0
@@ -105,42 +105,43 @@ export function SchoolsSection() {
                 return (
                   <div
                     key={school.id}
-                    className={`relative flex items-center ${
+                    className={`relative flex items-start ${
                       isEven ? 'md:flex-row' : 'md:flex-row-reverse'
                     } animate-in fade-in slide-in-from-bottom`}
                     style={{ animationDelay: `${index * 150}ms` }}
                   >
-                    {/* Timeline dot */}
-                    <div className="absolute left-8 md:left-1/2 w-6 h-6 transform -translate-x-1/2 z-10">
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-red-700 to-red-800 border-4 border-[#E8E2E1] shadow-lg group-hover:scale-125 transition-transform" />
+                    {/* Timeline dot - smaller on mobile */}
+                    <div className="absolute left-4 sm:left-6 md:left-1/2 top-6 sm:top-8 w-4 h-4 sm:w-6 sm:h-6 transform -translate-x-1/2 z-10">
+                      <div className="w-full h-full rounded-full bg-gradient-to-br from-red-700 to-red-800 border-2 sm:border-4 border-[#E8E2E1] shadow-lg" />
                     </div>
 
-                    {/* Content card */}
-                    <div className={`flex-1 ml-20 md:ml-0 ${isEven ? 'md:pr-12' : 'md:pl-12'}`}>
+                    {/* Content card - better mobile spacing */}
+                    <div className={`flex-1 ml-10 sm:ml-16 md:ml-0 ${isEven ? 'md:pr-12' : 'md:pl-12'}`}>
                       <div
-                        className={`group bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden border-2 border-slate-200 hover:border-red-700 cursor-pointer ${
-                          isExpanded ? 'scale-[1.02]' : ''
+                        className={`group bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden border-2 border-slate-200 hover:border-red-700 cursor-pointer ${
+                          isExpanded ? 'scale-[1.01] sm:scale-[1.02]' : ''
                         }`}
                         onClick={() => toggleSchool(school.id)}
                       >
-                        {/* Card header with logo and name */}
-                        <div className="flex items-center gap-6 p-6 bg-gradient-to-br from-slate-50 to-white border-b-2 border-slate-100">
-                          {/* Logo */}
-                          <div className="flex-shrink-0 w-20 h-20 rounded-xl bg-white shadow-lg border-2 border-slate-200 flex items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-500">
+                        {/* Card header - responsive layout */}
+                        <div className="flex items-center gap-4 sm:gap-6 p-4 sm:p-6 bg-gradient-to-br from-slate-50 to-white border-b-2 border-slate-100">
+                          
+                          {/* Logo - smaller on mobile */}
+                          <div className="flex-shrink-0 w-14 h-14 sm:w-20 sm:h-20 rounded-lg sm:rounded-xl bg-white shadow-md sm:shadow-lg border-2 border-slate-200 flex items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-500">
                             {school.logo_url ? (
                               <img 
                                 src={school.logo_url} 
                                 alt={school.name}
-                                className="w-full h-full object-contain p-2"
+                                className="w-full h-full object-contain p-1 sm:p-2"
                               />
                             ) : (
-                              <GraduationCap className="w-10 h-10 text-slate-400" />
+                              <GraduationCap className="w-7 h-7 sm:w-10 sm:h-10 text-slate-400" />
                             )}
                           </div>
 
-                          {/* Name and website */}
-                          <div className="flex-grow">
-                            <h3 className="text-2xl font-bold text-slate-900 group-hover:text-red-700 transition-colors mb-1">
+                          {/* Name and website - desktop layout unchanged */}
+                          <div className="flex-grow min-w-0">
+                            <h3 className="text-lg sm:text-2xl font-bold text-slate-900 group-hover:text-red-700 transition-colors mb-1 line-clamp-2 sm:line-clamp-none">
                               {school.name}
                             </h3>
                             {school.website && (
@@ -148,38 +149,38 @@ export function SchoolsSection() {
                                 href={school.website}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 text-red-700 hover:text-red-800 font-semibold text-sm group/link"
+                                className="inline-flex items-center gap-2 text-red-700 hover:text-red-800 font-semibold text-xs sm:text-sm group/link"
                                 onClick={(e) => e.stopPropagation()}
                               >
                                 Visitar website
-                                <ExternalLink className="w-4 h-4 group-hover/link:translate-x-1 group-hover/link:-translate-y-1 transition-transform" />
+                                <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4 group-hover/link:translate-x-1 group-hover/link:-translate-y-1 transition-transform" />
                               </a>
                             )}
                           </div>
 
-                          {/* Expand indicator */}
+                          {/* Expand indicator - desktop unchanged */}
                           <div className={`flex-shrink-0 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
-                            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
-                              <svg className="w-5 h-5 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-100 flex items-center justify-center">
+                              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                               </svg>
                             </div>
                           </div>
                         </div>
 
-                        {/* Card content */}
-                        <div className={`overflow-hidden transition-all duration-500 ${isExpanded ? 'max-h-[800px]' : 'max-h-0'}`}>
-                          <div className="p-6 space-y-6">
+                        {/* Card content - better mobile padding */}
+                        <div className={`overflow-hidden transition-all duration-500 ${isExpanded ? 'max-h-[1000px]' : 'max-h-0'}`}>
+                          <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                             {/* Description */}
                             {school.description && (
-                              <div className="space-y-3">
+                              <div className="space-y-2 sm:space-y-3">
                                 <div className="flex items-center gap-2">
-                                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center">
-                                    <BookOpen className="w-4 h-4 text-white" />
+                                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center">
+                                    <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
                                   </div>
-                                  <h4 className="text-lg font-bold text-slate-900">Sobre</h4>
+                                  <h4 className="text-base sm:text-lg font-bold text-slate-900">Sobre</h4>
                                 </div>
-                                <p className="text-slate-700 leading-relaxed pl-10">
+                                <p className="text-sm sm:text-base text-slate-700 leading-relaxed pl-9 sm:pl-10 text-justify">
                                   {school.description}
                                 </p>
                               </div>
@@ -187,14 +188,14 @@ export function SchoolsSection() {
 
                             {/* Learnings */}
                             {school.learnings && (
-                              <div className="space-y-3">
+                              <div className="space-y-2 sm:space-y-3">
                                 <div className="flex items-center gap-2">
-                                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-600 to-red-700 flex items-center justify-center">
-                                    <Lightbulb className="w-4 h-4 text-white" />
+                                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-red-600 to-red-700 flex items-center justify-center">
+                                    <Lightbulb className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
                                   </div>
-                                  <h4 className="text-lg font-bold text-slate-900">Aprendizagens</h4>
+                                  <h4 className="text-base sm:text-lg font-bold text-slate-900">Aprendizagens</h4>
                                 </div>
-                                <p className="text-slate-700 leading-relaxed pl-10">
+                                <p className="text-sm sm:text-base text-slate-700 leading-relaxed pl-9 sm:pl-10 text-justify">
                                   {school.learnings}
                                 </p>
                               </div>
@@ -202,15 +203,15 @@ export function SchoolsSection() {
                           </div>
                         </div>
 
-                        {/* Collapsed preview */}
+                        {/* Collapsed preview - better mobile text */}
                         {!isExpanded && school.description && (
-                          <div className="px-6 pb-6">
-                            <p className="text-slate-600 line-clamp-2 text-sm">
+                          <div className="px-4 sm:px-6 pb-4 sm:pb-6">
+                            <p className="text-slate-600 line-clamp-2 text-xs sm:text-sm">
                               {school.description}
                             </p>
-                            <p className="text-red-700 font-semibold text-sm mt-3 flex items-center gap-2">
-                              Clique para ver mais
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <p className="text-red-700 font-semibold text-xs sm:text-sm mt-2 sm:mt-3 flex items-center gap-2">
+                              Toque para ver mais
+                              <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                               </svg>
                             </p>

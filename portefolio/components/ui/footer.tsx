@@ -79,7 +79,7 @@ export function Footer() {
                 <p className="text-sm text-slate-400">{profile?.headline || "Developer & Innovator"}</p>
               </div>
             </div>
-            <p className="text-slate-400 leading-relaxed text-sm">
+            <p className="text-slate-400 leading-relaxed text-sm text-justify">
               {profile?.bio_short || "Apaixonado por tecnologia, inovação e criação de soluções que fazem a diferença."}
             </p>
             

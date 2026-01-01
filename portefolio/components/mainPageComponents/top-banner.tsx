@@ -78,28 +78,32 @@ export function TopBanner() {
               </h1>
             </div>
 
-            {/* Dynamic role */}
-            <div className="flex items-center justify-center md:justify-start gap-2 text-3xl md:text-4xl">
-              <span className="text-white/90 font-semibold drop-shadow-lg me-0 mr-0">I am</span>
-              <div className="relative h-16 w-80 overflow-hidden">
+            {/* Dynamic role - CENTERED on mobile, left-aligned on desktop */}
+            <div className="flex items-center justify-center md:justify-start text-3xl md:text-4xl">
+              <span className="text-white/90 font-semibold drop-shadow-lg whitespace-nowrap mr-2">
+                I am
+              </span>
+
+              {/* Animation container with dynamic width based on longest word */}
+              <div className="relative h-16 w-[240px] sm:w-[260px] md:w-[280px] flex items-center justify-center md:justify-start overflow-hidden">
                 {roles.map((item, index) => (
-                    <span
+                  <div
                     key={item.role}
-                    className={`absolute inset-0 flex items-center transition-all duration-500 ${
-                    index === currentRole
+                    className={`absolute inset-0 flex items-center justify-center md:justify-start transition-all duration-500 ${
+                      index === currentRole
                         ? "translate-y-0 opacity-100 scale-100"
                         : index < currentRole
                         ? "-translate-y-16 opacity-0 scale-90"
                         : "translate-y-16 opacity-0 scale-90"
                     }`}
-                >
-                    <span className="text-white/90 font-semibold drop-shadow-lg mr-2">
-                    {item.article}
+                  >
+                    <span className="text-white/90 font-semibold drop-shadow-lg mr-2 whitespace-nowrap">
+                      {item.article}
                     </span>
-                    <span className="font-black text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-                    {item.role}
+                    <span className="font-black text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.3)] whitespace-nowrap">
+                      {item.role}
                     </span>
-                </span>
+                  </div>
                 ))}
               </div>
             </div>
@@ -115,30 +119,35 @@ export function TopBanner() {
             </blockquote>
 
             {/* Action buttons */}
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-5 pt-6">
-              <Button 
-                size="lg" 
-                className="bg-white hover:bg-gray-50 text-red-800 text-xl font-bold px-10 py-7 shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-[0_12px_48px_rgba(0,0,0,0.4)] transition-all duration-200 group border-4 border-white hover:scale-105"
-                asChild
-              >
-                <Link href="/projects">
-                  Ver Projetos
-                  <ArrowRight className="ml-2 w-6 h-6 group-hover:translate-x-2 transition-transform duration-200" />
-                </Link>
-              </Button>
-
-              <Button 
-                size="lg" 
-                className="bg-white hover:bg-gray-50 text-red-800 text-xl font-bold px-10 py-7 shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-[0_12px_48px_rgba(0,0,0,0.4)] transition-all duration-200 group border-4 border-white hover:scale-105"
-                asChild
-              >
-                <a href={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/cvs/curriculo.pdf`} target="_blank" rel="noopener noreferrer">
-                  Download CV
-                  <Download className="ml-2 w-6 h-6 group-hover:translate-y-1 transition-transform duration-200" />
-                </a>
-              </Button>
+            <div className="flex flex-col sm:flex-row sm:flex-wrap items-center justify-center md:justify-start gap-5 pt-6">
               
-              <div className="flex gap-4 ml-auto">
+              {/* Main buttons - STACKED and FULL WIDTH on mobile (<640px), side-by-side on sm+ */}
+              <div className="flex flex-col sm:flex-row gap-5 w-full sm:w-auto">
+                <Button 
+                  size="lg" 
+                  className="w-full sm:w-auto bg-white hover:bg-gray-50 text-red-800 text-xl font-bold px-10 py-7 shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-[0_12px_48px_rgba(0,0,0,0.4)] transition-all duration-200 group border-4 border-white hover:scale-105"
+                  asChild
+                >
+                  <Link href="/projects">
+                    Ver Projetos
+                    <ArrowRight className="ml-2 w-6 h-6 group-hover:translate-x-2 transition-transform duration-200" />
+                  </Link>
+                </Button>
+
+                <Button 
+                  size="lg" 
+                  className="w-full sm:w-auto bg-white hover:bg-gray-50 text-red-800 text-xl font-bold px-10 py-7 shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-[0_12px_48px_rgba(0,0,0,0.4)] transition-all duration-200 group border-4 border-white hover:scale-105"
+                  asChild
+                >
+                  <a href={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/cvs/curriculo.pdf`} target="_blank" rel="noopener noreferrer">
+                    Download CV
+                    <Download className="ml-2 w-6 h-6 group-hover:translate-y-1 transition-transform duration-200" />
+                  </a>
+                </Button>
+              </div>
+              
+              {/* Social buttons - CENTERED always, ml-auto only on md+ */}
+              <div className="flex gap-4 justify-center md:ml-auto">
                 <Button
                   size="lg"
                   className="bg-white/90 hover:bg-white text-slate-900 border-4 border-white shadow-[0_8px_32px_rgba(0,0,0,0.2)] hover:scale-110 transition-all p-6"

@@ -134,7 +134,7 @@ export function CoursesSection() {
                     <div className="flex-grow min-w-0">
                       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-3">
                         <div className="flex-grow">
-                          <h3 className="text-xl md:text-2xl font-bold text-slate-900 group-hover:text-red-700 transition-colors mb-2 leading-tight">
+                          <h3 className="text-xl md:text-2xl font-bold text-slate-900 group-hover:text-red-700 transition-colors mb-2 leading-tight text-justify">
                             {course.title}
                           </h3>
                           <p className="text-base md:text-lg font-semibold text-slate-700 mb-2">
@@ -165,7 +165,7 @@ export function CoursesSection() {
 
                       {/* Description */}
                       {course.description && (
-                        <p className="text-slate-600 leading-relaxed mb-4 text-sm md:text-base">
+                        <p className="text-slate-600 leading-relaxed mb-4 text-sm md:text-base text-justify">
                           {course.description}
                         </p>
                       )}

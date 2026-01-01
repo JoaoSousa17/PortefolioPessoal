@@ -123,7 +123,7 @@ export function ProjectsSection() {
                       {project.title}
                     </CardTitle>
                     {project.description && (
-                      <CardDescription className="text-base text-slate-600 leading-relaxed line-clamp-3">
+                      <CardDescription className="text-base text-slate-600 leading-relaxed line-clamp-3 text-justify">
                         {project.description}
                       </CardDescription>
                     )}
