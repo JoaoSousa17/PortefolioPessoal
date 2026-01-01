@@ -150,7 +150,7 @@ export function TechRadarSection() {
                       {item._name}
                     </CardTitle>
                     {item.notes && (
-                      <CardDescription className="text-sm text-slate-600 leading-relaxed line-clamp-2 mt-2">
+                      <CardDescription className="text-sm text-slate-600 leading-relaxed line-clamp-2 mt-2 text-justify">
                         {item.notes}
                       </CardDescription>
                     )}

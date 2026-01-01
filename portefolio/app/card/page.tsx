@@ -212,10 +212,45 @@ export default function LinktreePage() {
             </div>
 
             {/* Bio */}
-            <p className="text-slate-700 text-center leading-relaxed mb-8 text-sm animate-in fade-in slide-in-from-bottom duration-700"
-               style={{ animationDelay: '400ms', animationFillMode: 'backwards' }}>
-              {profile.bio_long}
+            <p className="text-slate-700 text-center leading-relaxed mb-1 text-sm animate-in fade-in slide-in-from-bottom duration-700 whitespace-pre-line" style={{ animationDelay: '400ms', animationFillMode: 'backwards' }} >
+                {profile.bio_long}
             </p>
+            <p className="text-slate-700 text-center leading-relaxed mb-6 text-sm animate-in fade-in slide-in-from-bottom duration-700 whitespace-pre-line" style={{ animationDelay: '400ms', animationFillMode: 'backwards' }} >
+                Inventor, Developer, Entrepreneur
+            </p>
+            {/* Save as Contact Button */}
+            <div className="flex justify-center mb-8 animate-in fade-in slide-in-from-bottom duration-700"
+                 style={{ animationDelay: '450ms', animationFillMode: 'backwards' }}>
+              <Button
+                asChild
+                className="
+                      px-8 py-3 rounded-full
+                      w-full font-bold text-white
+                      bg-gradient-to-r from-red-600 to-red-700
+                      transition-all duration-300 ease-out
+                      hover:brightness-110 hover:saturate-110
+                      hover:ring-2 hover:ring-red-500/40
+                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500
+                    "
+              >
+                <a href="/contact.vcf" download="contact.vcf" className="flex items-center gap-2">
+                  <svg 
+                    className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      strokeWidth={2} 
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" 
+                    />
+                  </svg>
+                  Save as Contact
+                </a>
+              </Button>
+            </div>
 
             {/* LINKS Separator */}
             <div className="relative my-8 animate-in fade-in slide-in-from-left duration-700"

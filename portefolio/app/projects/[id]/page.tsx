@@ -102,61 +102,61 @@ export default function ProjectDetailPage() {
       
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-16 md:py-20 overflow-hidden">
+        <section className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-8 sm:py-16 md:py-20 overflow-hidden">
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute w-[500px] h-[500px] -top-32 -right-32 bg-red-600/20 rounded-full blur-3xl" />
             <div className="absolute w-[400px] h-[400px] -bottom-24 -left-24 bg-slate-600/20 rounded-full blur-3xl" />
           </div>
 
-          <div className="relative container mx-auto px-6">
+          <div className="relative container mx-auto px-4 sm:px-6">
             <Button
               variant="ghost"
-              className="text-white hover:bg-white/10 mb-8 group"
+              className="text-white hover:bg-white/10 mb-6 sm:mb-8 group text-sm sm:text-base"
               asChild
             >
               <Link href="/projects">
-                <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+                <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
                 Voltar aos projetos
               </Link>
             </Button>
 
-            <div className="flex flex-col md:flex-row gap-8 items-start">
+            <div className="flex flex-col md:flex-row gap-6 sm:gap-8 items-start">
               <div className="flex-grow">
-                <h1 className="text-4xl md:text-6xl font-bold mb-4 drop-shadow-lg">
+                <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold mb-3 sm:mb-4 drop-shadow-lg">
                   {project.title}
                 </h1>
                 
                 {project.description && (
-                  <p className="text-xl text-white/90 mb-6 leading-relaxed">
+                  <p className="text-base sm:text-xl text-white/90 mb-4 sm:mb-6 leading-relaxed">
                     {project.description}
                   </p>
                 )}
 
                 {/* Metadata */}
-                <div className="flex flex-wrap gap-4 mb-6">
+                <div className="flex flex-wrap gap-2 sm:gap-4 mb-4 sm:mb-6">
                   {project.created_at && (
-                    <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2 border border-white/20">
-                      <Calendar className="w-4 h-4" />
-                      <span className="text-sm">{formatDate(project.created_at)}</span>
+                    <div className="flex items-center gap-1.5 sm:gap-2 bg-white/10 backdrop-blur-sm rounded-lg px-3 py-1.5 sm:px-4 sm:py-2 border border-white/20">
+                      <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      <span className="text-xs sm:text-sm">{formatDate(project.created_at)}</span>
                     </div>
                   )}
                   {project.featured && (
-                    <Badge className="bg-gradient-to-r from-red-600 to-red-700 text-white border-0 px-4 py-2 text-sm">
+                    <Badge className="bg-gradient-to-r from-red-600 to-red-700 text-white border-0 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm">
                       Projeto em Destaque
                     </Badge>
                   )}
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex flex-wrap gap-4">
+                <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4">
                   {project.main_url && (
                     <Button
                       size="lg"
-                      className="bg-white text-slate-900 hover:bg-gray-100 shadow-lg font-semibold"
+                      className="w-full sm:w-auto bg-white text-slate-900 hover:bg-gray-100 shadow-lg font-semibold text-sm sm:text-base h-10 sm:h-11"
                       asChild
                     >
                       <a href={project.main_url} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="w-5 h-5 mr-2" />
+                        <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                         Ver Projeto Live
                       </a>
                     </Button>
@@ -165,11 +165,11 @@ export default function ProjectDetailPage() {
                     <Button
                       size="lg"
                       variant="outline"
-                      className="bg-white/10 border-white/30 text-white hover:bg-white/20 backdrop-blur-sm font-semibold"
+                      className="w-full sm:w-auto bg-white/10 border-white/30 text-white hover:bg-white/20 backdrop-blur-sm font-semibold text-sm sm:text-base h-10 sm:h-11"
                       asChild
                     >
                       <a href={project.github_url} target="_blank" rel="noopener noreferrer">
-                        <Github className="w-5 h-5 mr-2" />
+                        <Github className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                         Ver no GitHub
                       </a>
                     </Button>
@@ -180,7 +180,7 @@ export default function ProjectDetailPage() {
               {/* Thumbnail */}
               {project.thumbnail_url && (
                 <div className="w-full md:w-96 flex-shrink-0">
-                  <div className="rounded-xl overflow-hidden shadow-2xl border-4 border-white/20">
+                  <div className="rounded-lg sm:rounded-xl overflow-hidden shadow-xl sm:shadow-2xl border-2 sm:border-4 border-white/20">
                     <img 
                       src={project.thumbnail_url} 
                       alt={project.title}
@@ -194,23 +194,23 @@ export default function ProjectDetailPage() {
         </section>
 
         {/* Content Section */}
-        <section className="py-16 md:py-24">
-          <div className="container mx-auto px-6">
+        <section className="py-8 sm:py-16 md:py-24">
+          <div className="container mx-auto px-4 sm:px-6">
             <div className="max-w-4xl mx-auto">
               
               {/* Tags */}
               {project.tags.length > 0 && (
-                <Card className="bg-white border-0 shadow-xl p-8 mb-8">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Tag className="w-5 h-5 text-red-700" />
-                    <h2 className="text-2xl font-bold text-slate-900">Tecnologias</h2>
+                <Card className="bg-white border-0 shadow-lg sm:shadow-xl p-5 sm:p-8 mb-6 sm:mb-8">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                    <Tag className="w-4 h-4 sm:w-5 sm:h-5 text-red-700" />
+                    <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Tecnologias</h2>
                   </div>
-                  <div className="flex flex-wrap gap-3">
+                  <div className="flex flex-wrap gap-2 sm:gap-3">
                     {project.tags.map((tag, index) => (
                       <Badge 
                         key={index}
                         variant="outline"
-                        className="bg-slate-100 text-slate-700 border-slate-300 font-medium px-4 py-2 text-sm"
+                        className="bg-slate-100 text-slate-700 border-slate-300 font-medium px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm"
                       >
                         {tag}
                       </Badge>
@@ -221,13 +221,13 @@ export default function ProjectDetailPage() {
 
               {/* Long Description */}
               {project.long_description && (
-                <Card className="bg-white border-0 shadow-xl p-8 md:p-12">
-                  <h2 className="text-3xl font-bold text-slate-900 mb-6">
+                <Card className="bg-white border-0 shadow-lg sm:shadow-xl p-5 sm:p-8 md:p-12">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-4 sm:mb-6">
                     Sobre o Projeto
                   </h2>
-                  <Separator className="mb-6" />
+                  <Separator className="mb-4 sm:mb-6" />
                   <div className="prose prose-slate max-w-none">
-                    <p className="text-lg text-slate-700 leading-relaxed whitespace-pre-line">
+                    <p className="text-base sm:text-lg text-slate-700 leading-relaxed whitespace-pre-line text-justify">
                       {project.long_description}
                     </p>
                   </div>
@@ -235,18 +235,18 @@ export default function ProjectDetailPage() {
               )}
 
               {/* Call to Action */}
-              <div className="mt-12 text-center">
-                <p className="text-slate-600 mb-6 text-lg">
+              <div className="mt-8 sm:mt-12 text-center">
+                <p className="text-slate-600 mb-4 sm:mb-6 text-base sm:text-lg">
                   Gostou deste projeto? Veja mais!
                 </p>
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-2 border-slate-900 hover:bg-slate-900 hover:text-white transition-all font-semibold"
+                  className="w-full sm:w-auto border-2 border-slate-900 hover:bg-slate-900 hover:text-white transition-all font-semibold text-sm sm:text-base h-10 sm:h-11"
                   asChild
                 >
                   <Link href="/projects">
-                    <ArrowLeft className="w-5 h-5 mr-2 rotate-180" />
+                    <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-2 rotate-180" />
                     Ver Todos os Projetos
                   </Link>
                 </Button>

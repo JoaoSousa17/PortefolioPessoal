@@ -120,35 +120,35 @@ export function BooksSection() {
     </p>
   </div>
 ) : (
-  <div className="relative max-w-6xl mx-auto mb-16">
+  <div className="relative max-w-6xl mx-auto mb-12 sm:mb-16">
 
-    {/* Navigation */}
-    <div className="absolute -top-14 right-0 flex gap-2">
+    {/* Navigation - adjusted position and size for mobile */}
+    <div className="absolute -top-12 sm:-top-14 right-0 flex gap-2">
       <Button
         variant="outline"
         size="icon"
         onClick={handlePrevious}
-        className="rounded-full border-slate-300 hover:bg-slate-100"
+        className="rounded-full border-slate-300 hover:bg-slate-100 w-9 h-9 sm:w-10 sm:h-10"
       >
-        <ChevronLeft />
+        <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
       </Button>
       <Button
         variant="outline"
         size="icon"
         onClick={handleNext}
-        className="rounded-full border-slate-300 hover:bg-slate-100"
+        className="rounded-full border-slate-300 hover:bg-slate-100 w-9 h-9 sm:w-10 sm:h-10"
       >
-        <ChevronRight />
+        <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
       </Button>
     </div>
 
-    <div className="grid grid-cols-1 md:grid-cols-5 gap-12 items-center">
+    <div className="grid grid-cols-1 md:grid-cols-5 gap-8 sm:gap-12 items-center">
 
-      {/* Main Book */}
-      <div className={`md:col-span-3 flex gap-8 items-center transition-all duration-300 ease-out ${animating ? "opacity-0 translate-x-4" : "opacity-100 translate-x-0"}`}>
+      {/* Main Book - vertical layout on mobile, horizontal on tablet+ */}
+      <div className={`md:col-span-3 flex flex-col sm:flex-row gap-6 sm:gap-8 items-center sm:items-start transition-all duration-300 ease-out ${animating ? "opacity-0 translate-x-4" : "opacity-100 translate-x-0"}`}>
 
-        {/* Cover */}
-        <div className="w-56 h-80 rounded-xl overflow-hidden shadow-2xl border border-slate-200 flex-shrink-0">
+        {/* Cover - smaller on mobile */}
+        <div className="w-40 h-56 sm:w-56 sm:h-80 rounded-lg sm:rounded-xl overflow-hidden shadow-xl sm:shadow-2xl border border-slate-200 flex-shrink-0">
           {books[currentIndex]?.cover_url ? (
             <img
               src={books[currentIndex].cover_url ?? undefined}
@@ -157,35 +157,35 @@ export function BooksSection() {
             />
           ) : (
             <div className="w-full h-full bg-slate-200 flex items-center justify-center">
-              <BookOpen className="w-16 h-16 text-slate-400" />
+              <BookOpen className="w-12 h-12 sm:w-16 sm:h-16 text-slate-400" />
             </div>
           )}
         </div>
 
-        {/* Info */}
-        <div className="max-w-md">
-          <h3 className="text-3xl font-bold text-slate-900 mb-3">
+        {/* Info - centered on mobile, left-aligned on tablet+ */}
+        <div className="max-w-md text-center sm:text-left px-4 sm:px-0">
+          <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2 sm:mb-3">
             {books[currentIndex]?.title}
           </h3>
 
         {authors && authors.length > 0 && (
-        <p className="text-slate-600 font-medium mb-4">
+        <p className="text-sm sm:text-base text-slate-600 font-medium mb-3 sm:mb-4">
             {authors.join(", ")}
         </p>
         )}
 
           {books[currentIndex]?.notes && (
-            <p className="text-slate-600 leading-relaxed italic">
-              “{books[currentIndex].notes}”
+            <p className="text-sm sm:text-base text-slate-600 leading-relaxed italic">
+              "{books[currentIndex].notes}"
             </p>
           )}
         </div>
       </div>
 
-      {/* Next Preview */}
+      {/* Next Preview - HIDDEN on mobile, shown on md+ */}
       {books.length > 1 && (
         <div
-          className="md:col-span-2 flex flex-col items-center opacity-60 hover:opacity-100 transition cursor-pointer"
+          className="hidden md:flex md:col-span-2 flex-col items-center opacity-60 hover:opacity-100 transition cursor-pointer"
           onClick={handleNext}
         >
           <p className="text-sm uppercase tracking-widest text-slate-500 mb-4">
@@ -209,16 +209,16 @@ export function BooksSection() {
       )}
     </div>
 
-    {/* Dots */}
-    <div className="flex justify-center gap-2 mt-10">
+    {/* Dots - smaller on mobile */}
+    <div className="flex justify-center gap-1.5 sm:gap-2 mt-8 sm:mt-10">
       {books.map((_, index) => (
         <button
           key={index}
           onClick={() => setCurrentIndex(index)}
-          className={`h-2 rounded-full transition-all ${
+          className={`h-1.5 sm:h-2 rounded-full transition-all ${
             index === currentIndex
-              ? "w-8 bg-slate-900"
-              : "w-2 bg-slate-400 hover:bg-slate-600"
+              ? "w-6 sm:w-8 bg-slate-900"
+              : "w-1.5 sm:w-2 bg-slate-400 hover:bg-slate-600"
           }`}
         />
       ))}

@@ -170,7 +170,7 @@ export function SocialSection() {
 
                           {/* Description */}
                           {project._description && (
-                            <p className="text-slate-600 leading-relaxed mb-4 text-sm md:text-base">
+                            <p className="text-slate-600 leading-relaxed mb-4 text-sm md:text-base text-justify">
                               {project._description}
                             </p>
                           )}

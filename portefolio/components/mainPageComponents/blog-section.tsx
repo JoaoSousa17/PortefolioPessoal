@@ -117,7 +117,7 @@ export function BlogSection() {
           <Card className="group bg-white border-0 shadow-2xl hover:shadow-[0_20px_60px_rgba(0,0,0,0.3)] transition-all duration-500 overflow-hidden mb-12 animate-in fade-in slide-in-from-bottom">
             
             {/* Latest Article Badge */}
-            <Badge className="absolute top-6 right-6 bg-gradient-to-r from-red-600 to-red-700 text-white border-0 shadow-lg text-sm px-4 py-1.5 z-10">
+            <Badge className="absolute top-2 right-6 bg-gradient-to-r from-red-600 to-red-700 text-white border-0 shadow-lg text-sm px-4 py-1.5 z-10">
               Último artigo
             </Badge>
 
@@ -125,7 +125,7 @@ export function BlogSection() {
               {/* Content Side */}
               <div className="flex-grow p-8 md:p-10">
                 <CardHeader className="p-0 mb-6">
-                  <CardTitle className="text-3xl md:text-4xl font-bold text-slate-900 group-hover:text-red-700 transition-colors leading-tight mb-4">
+                  <CardTitle className="text-3xl md:text-4xl font-bold text-slate-900 group-hover:text-red-700 transition-colors leading-tight mb-4 text-justify">
                     {latestPost.title}
                   </CardTitle>
                   
@@ -159,7 +159,7 @@ export function BlogSection() {
                   </div>
 
                   {latestPost.excerpt && (
-                    <CardDescription className="text-lg text-slate-600 leading-relaxed">
+                    <CardDescription className="text-lg text-slate-600 leading-relaxed text-justify">
                       {latestPost.excerpt}
                     </CardDescription>
                   )}
