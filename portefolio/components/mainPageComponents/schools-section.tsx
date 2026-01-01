@@ -88,7 +88,7 @@ export function SchoolsSection() {
         {schools.length === 0 ? (
           <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-12 text-center border-2 border-slate-300">
             <GraduationCap className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-            <p className="text-slate-700 text-xl">
+            <p className="text-slate-700 text-xl text-justify">
               Nenhuma instituição registada no momento.
             </p>
           </div>

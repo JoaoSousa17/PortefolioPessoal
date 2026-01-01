@@ -91,7 +91,7 @@ export function LanguagesSection() {
             <h2 className="text-4xl md:text-5xl font-bold text-white drop-shadow-lg">
               Línguas
             </h2>
-            <p className="text-white/90 text-lg mt-2">
+            <p className="text-white/90 text-lg mt-2 text-justify">
               Idiomas que domino e estou a aprender
             </p>
           </div>

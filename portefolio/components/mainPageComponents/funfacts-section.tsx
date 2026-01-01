@@ -161,7 +161,7 @@ export function FunFactsSection() {
             <h2 className="text-4xl md:text-5xl font-bold text-slate-900">
               Mini-Game Fun Facts
             </h2>
-            <p className="text-slate-700 text-lg mt-2">
+            <p className="text-slate-700 text-lg mt-2 text-justify">
               Descobre curiosidades de forma interativa
             </p>
           </div>

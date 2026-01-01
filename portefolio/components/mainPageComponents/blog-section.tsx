@@ -99,7 +99,7 @@ export function BlogSection() {
             <h2 className="text-4xl md:text-5xl font-bold text-white drop-shadow-lg">
               Blog
             </h2>
-            <p className="text-white/90 text-lg mt-2">
+            <p className="text-white/90 text-lg mt-2 text-justify">
               Partilha de conhecimento e experiências
             </p>
           </div>

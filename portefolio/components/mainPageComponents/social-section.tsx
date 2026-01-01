@@ -89,7 +89,7 @@ export function SocialSection() {
             <h2 className="text-4xl md:text-5xl font-bold text-slate-900">
               Projetos Sociais & Voluntariado
             </h2>
-            <p className="text-slate-700 text-lg mt-2">
+            <p className="text-slate-700 text-lg mt-2 text-justify">
               Contribuindo para causas que fazem a diferença
             </p>
           </div>

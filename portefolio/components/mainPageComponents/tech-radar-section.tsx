@@ -92,7 +92,7 @@ export function TechRadarSection() {
             <h2 className="text-4xl md:text-5xl font-bold text-slate-900">
               Tech Radar
             </h2>
-            <p className="text-slate-700 text-lg mt-2">
+            <p className="text-slate-700 text-lg mt-2 text-justify">
               Tecnologias que estou a aprender e a utilizar atualmente
             </p>
           </div>

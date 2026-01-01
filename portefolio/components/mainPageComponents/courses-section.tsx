@@ -88,7 +88,7 @@ export function CoursesSection() {
             <h2 className="text-4xl md:text-5xl font-bold text-white drop-shadow-lg">
               Licenças & Certificações
             </h2>
-            <p className="text-white/90 text-lg mt-2">
+            <p className="text-white/90 text-lg mt-2 text-justify">
               Cursos e certificações que complementam a minha formação
             </p>
           </div>

@@ -108,8 +108,8 @@ export function TopBanner() {
               </div>
             </div>
 
-            {/* Quote */}
-            <blockquote className="border-l-[6px] border-gray-500 bg-white/95 backdrop-blur-md pl-6 py-5 rounded-r-xl shadow-[0_8px_32px_rgba(0,0,0,0.2)] hover:bg-white transition-colors">
+            {/* Quote - text-left for all breakpoints */}
+            <blockquote className="border-l-[6px] border-gray-500 bg-white/95 backdrop-blur-md pl-6 py-5 rounded-r-xl shadow-[0_8px_32px_rgba(0,0,0,0.2)] hover:bg-white transition-colors text-left">
               <p className="text-2xl md:text-3xl text-slate-900 font-bold italic">
                 "Why not me?"
               </p>

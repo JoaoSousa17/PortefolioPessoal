@@ -140,7 +140,7 @@ export function ContactSection() {
             <h2 className="text-4xl md:text-5xl font-bold text-white drop-shadow-lg">
               Contacto
             </h2>
-            <p className="text-white/90 text-lg mt-2">
+            <p className="text-white/90 text-lg mt-2 text-justify">
               Vamos trabalhar juntos
             </p>
           </div>

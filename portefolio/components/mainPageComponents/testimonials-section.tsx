@@ -77,7 +77,7 @@ export function TestimonialsSection() {
             <h2 className="text-4xl md:text-5xl font-bold text-white drop-shadow-lg">
               Testemunhos
             </h2>
-            <p className="text-white/90 text-lg mt-2">
+            <p className="text-white/90 text-lg mt-2 text-justify">
               O que dizem sobre o meu trabalho
             </p>
           </div>
