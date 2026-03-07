@@ -4,8 +4,11 @@ import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Languages, Star, Info, Loader2 } from "lucide-react"
 import { supabase, type Language } from "@/lib/supabase"
+import { useTranslation } from "@/lib/hooks/useTranslation"
 
 export function LanguagesSection() {
+  const { t } = useTranslation()
+
   const [languages, setLanguages] = useState<Language[]>([])
   const [loading, setLoading] = useState(true)
   const [hoveredLanguage, setHoveredLanguage] = useState<string | null>(null)
@@ -17,14 +20,14 @@ export function LanguagesSection() {
   const fetchLanguages = async () => {
     try {
       const { data, error } = await supabase
-        .from('languages')
-        .select('*')
-        .order('_level', { ascending: false })
+        .from("languages")
+        .select("*")
+        .order("_level", { ascending: false })
 
       if (error) throw error
       setLanguages(data || [])
     } catch (error) {
-      console.error('Error fetching languages:', error)
+      console.error("Error fetching languages:", error)
     } finally {
       setLoading(false)
     }
@@ -89,10 +92,10 @@ export function LanguagesSection() {
           </div>
           <div>
             <h2 className="text-4xl md:text-5xl font-bold text-white drop-shadow-lg">
-              Línguas
+              {t.languages.title}
             </h2>
-            <p className="text-white/90 text-lg mt-2">
-              Idiomas que domino e estou a aprender
+            <p className="text-white/90 text-lg mt-2 text-justify">
+              {t.languages.subtitle}
             </p>
           </div>
         </div>
@@ -102,7 +105,7 @@ export function LanguagesSection() {
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-12 text-center border border-white/20">
             <Languages className="w-16 h-16 text-white/50 mx-auto mb-4" />
             <p className="text-white/90 text-xl">
-              Nenhuma língua registada no momento.
+              {t.languages.empty}
             </p>
           </div>
         ) : (
@@ -146,7 +149,9 @@ export function LanguagesSection() {
                         {hoveredLanguage === language.id && (
                           <div className="absolute z-50 bottom-full right-0 mb-2 w-72 p-4 bg-slate-900 text-white text-sm rounded-xl shadow-2xl animate-in fade-in slide-in-from-bottom-2">
                             <div className="absolute -bottom-2 right-4 w-4 h-4 bg-slate-900 rotate-45" />
-                            <p className="relative z-10 leading-relaxed">{language.info}</p>
+                            <p className="relative z-10 leading-relaxed">
+                              {language.info}
+                            </p>
                           </div>
                         )}
                       </div>

@@ -9,12 +9,14 @@ import { supabase, type BlogPost, type BlogTag } from "@/lib/supabase"
 import { TopBar } from "@/components/ui/top-bar"
 import { Footer } from "@/components/ui/footer"
 import Link from "next/link"
+import { useTranslation } from "@/lib/hooks/useTranslation"
 
 type BlogPostWithTags = BlogPost & {
   tags: string[]
 }
 
 export default function BlogPage() {
+  const { t } = useTranslation()
   const [posts, setPosts] = useState<BlogPostWithTags[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -24,7 +26,6 @@ export default function BlogPage() {
 
   const fetchPosts = async () => {
     try {
-      // Fetch all published posts
       const { data: postsData, error: postsError } = await supabase
         .from('blog_posts')
         .select('*')
@@ -33,7 +34,6 @@ export default function BlogPage() {
 
       if (postsError) throw postsError
 
-      // Fetch tags for all posts
       const postsWithTags = await Promise.all(
         (postsData || []).map(async (post) => {
           const { data: tagsData } = await supabase
@@ -73,7 +73,6 @@ export default function BlogPage() {
       <main className="flex-grow">
         {/* Hero Section */}
         <section className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-8 sm:py-16 md:py-24 overflow-hidden">
-          {/* Decorative elements */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute w-[500px] h-[500px] -top-32 -right-32 bg-red-600/20 rounded-full blur-3xl" />
             <div className="absolute w-[400px] h-[400px] -bottom-24 -left-24 bg-slate-600/20 rounded-full blur-3xl" />
@@ -88,7 +87,7 @@ export default function BlogPage() {
             >
               <Link href="/">
                 <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-                Voltar à página inicial
+                {t.blogPage.backHome}
               </Link>
             </Button>
 
@@ -99,10 +98,10 @@ export default function BlogPage() {
               </div>
               <div>
                 <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold drop-shadow-lg">
-                  Blog
+                  {t.blogPage.title}
                 </h1>
                 <p className="text-base sm:text-xl text-white/90 mt-1 sm:mt-2">
-                  Artigos sobre tecnologia, programação e inovação
+                  {t.blogPage.subtitle}
                 </p>
               </div>
             </div>
@@ -111,7 +110,7 @@ export default function BlogPage() {
             <div className="flex gap-3 sm:gap-6 mt-6 sm:mt-8">
               <div className="bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl px-4 py-2 sm:px-6 sm:py-3 border border-white/20">
                 <p className="text-2xl sm:text-3xl font-bold">{posts.length}</p>
-                <p className="text-xs sm:text-sm text-white/80">Artigos Publicados</p>
+                <p className="text-xs sm:text-sm text-white/80">{t.blogPage.stats.published}</p>
               </div>
             </div>
           </div>
@@ -128,7 +127,7 @@ export default function BlogPage() {
               <div className="bg-white rounded-2xl p-12 text-center border-2 border-slate-300">
                 <BookOpen className="w-16 h-16 text-slate-400 mx-auto mb-4" />
                 <p className="text-slate-700 text-xl">
-                  Nenhum artigo publicado no momento.
+                  {t.blogPage.noPosts}
                 </p>
               </div>
             ) : (
@@ -139,11 +138,9 @@ export default function BlogPage() {
                     className="group bg-white border-0 shadow-lg sm:shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden animate-in fade-in slide-in-from-bottom"
                     style={{ animationDelay: `${index * 80}ms` }}
                   >
-                    {/* Hover accent line */}
                     <div className="h-1.5 sm:h-2 bg-gradient-to-r from-red-700 to-red-800 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
                     
                     <CardHeader className="p-5 sm:p-8 md:p-10">
-                      {/* Date and Tags */}
                       <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
                         {post.published_at && (
                           <div className="flex items-center gap-1.5 sm:gap-2 text-slate-600">
@@ -183,12 +180,10 @@ export default function BlogPage() {
                         )}
                       </div>
 
-                      {/* Title */}
                       <CardTitle className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 group-hover:text-red-700 transition-colors leading-tight mb-3 sm:mb-4">
                         {post.title}
                       </CardTitle>
 
-                      {/* Excerpt */}
                       {post.excerpt && (
                         <CardDescription className="text-base sm:text-lg text-slate-600 leading-relaxed line-clamp-3 text-justify">
                           {post.excerpt}
@@ -215,7 +210,7 @@ export default function BlogPage() {
                                 href={`/blog/${post.slug}`}
                                 className="flex items-center justify-center"
                             >
-                                Ler artigo completo
+                                {t.blogPage.readMore}
                                 <ArrowRight className="ml-2 w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-80" />
                             </Link>
                         </Button>

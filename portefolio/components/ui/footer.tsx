@@ -6,8 +6,10 @@ import { Separator } from "@/components/ui/separator"
 import { Heart, Mail, Linkedin, Github, Instagram, Facebook, MessageCircle, ArrowUp, Download, FileText } from "lucide-react"
 import { supabase, type Profile } from "@/lib/supabase"
 import Link from "next/link"
+import { useTranslation } from "@/lib/hooks/useTranslation"
 
 export function Footer() {
+  const { t } = useTranslation()
   const [profile, setProfile] = useState<Profile | null>(null)
 
   useEffect(() => {
@@ -36,17 +38,17 @@ export function Footer() {
   const currentYear = new Date().getFullYear()
 
   const quickLinks = [
-    { name: "Sobre", href: "#about" },
-    { name: "Projetos", href: "#projects" },
-    { name: "Formação", href: "#schools" },
-    { name: "Skills", href: "#skills" },
+    { name: t.footer.quickLinks.about, href: "#about" },
+    { name: t.footer.quickLinks.projects, href: "#projects" },
+    { name: t.footer.quickLinks.schools, href: "#schools" },
+    { name: t.footer.quickLinks.skills, href: "#skills" },
   ]
 
   const moreLinks = [
-    { name: "Tech Radar", href: "#tech-radar" },
-    { name: "Blog", href: "#blog" },
-    { name: "Testemunhos", href: "#testimonials" },
-    { name: "Contacto", href: "#contact" },
+    { name: t.footer.moreLinks.techRadar, href: "#tech-radar" },
+    { name: t.footer.moreLinks.blog, href: "#blog" },
+    { name: t.footer.moreLinks.testimonials, href: "#testimonials" },
+    { name: t.footer.moreLinks.contact, href: "#contact" },
   ]
 
   const socialLinks = [
@@ -60,12 +62,9 @@ export function Footer() {
   return (
     <footer className="relative w-full bg-slate-900 text-white overflow-hidden">
       
-      {/* Decorative top wave */}
       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-600 via-red-700 to-red-600" />
 
       <div className="container mx-auto px-6 py-16">
-        
-        {/* Main Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           
           {/* About Column */}
@@ -76,21 +75,20 @@ export function Footer() {
               </div>
               <div>
                 <h3 className="font-bold text-xl text-white">João Sousa</h3>
-                <p className="text-sm text-slate-400">{profile?.headline || "Developer & Innovator"}</p>
+                <p className="text-sm text-slate-400">{profile?.headline || t.footer.about.headline}</p>
               </div>
             </div>
             <p className="text-slate-400 leading-relaxed text-sm text-justify">
-              {profile?.bio_short || "Apaixonado por tecnologia, inovação e criação de soluções que fazem a diferença."}
+              {profile?.bio_short || t.footer.about.bio}
             </p>
             
-            {/* Download CV Button - Creative placement */}
             <Button
               asChild
               className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300 group mt-6"
             >
               <a href={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/cvs/curriculo.pdf`} target="_blank" rel="noopener noreferrer">
                 <FileText className="w-4 h-4 mr-2" />
-                Download CV
+                {t.footer.about.downloadCV}
                 <Download className="w-4 h-4 ml-2 group-hover:translate-y-1 transition-transform" />
               </a>
             </Button>
@@ -98,9 +96,9 @@ export function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h4 className="font-bold text-lg mb-6 text-white">Links Rápidos</h4>
+            <h4 className="font-bold text-lg mb-6 text-white">{t.footer.quickLinks.title}</h4>
             <ul className="space-y-3">
-              {quickLinks.map((link) => (
+              {quickLinks.map(link => (
                 <li key={link.name}>
                   <a
                     href={link.href}
@@ -116,9 +114,9 @@ export function Footer() {
 
           {/* More Links */}
           <div>
-            <h4 className="font-bold text-lg mb-6 text-white">Explorar</h4>
+            <h4 className="font-bold text-lg mb-6 text-white">{t.footer.moreLinks.title}</h4>
             <ul className="space-y-3">
-              {moreLinks.map((link) => (
+              {moreLinks.map(link => (
                 <li key={link.name}>
                   <a
                     href={link.href}
@@ -134,7 +132,7 @@ export function Footer() {
 
           {/* Contact & Social */}
           <div>
-            <h4 className="font-bold text-lg mb-6 text-white">Conecta-te</h4>
+            <h4 className="font-bold text-lg mb-6 text-white">{t.footer.contact.title}</h4>
             
             {profile?.email && (
               <a 
@@ -147,7 +145,7 @@ export function Footer() {
             )}
 
             <div className="flex flex-wrap gap-3">
-              {socialLinks.map((social) => (
+              {socialLinks.map(social => (
                 <Button
                   key={social.label}
                   variant="outline"
@@ -167,33 +165,29 @@ export function Footer() {
 
         <Separator className="bg-slate-800 mb-8" />
 
-        {/* Bottom Footer */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           
-          {/* Copyright */}
           <div className="text-center md:text-left">
             <p className="text-slate-400 text-sm flex items-center gap-2 justify-center md:justify-start">
-              © {currentYear} João Sousa. Feito com 
+              {t.footer.bottom.copyright.replace("{year}", currentYear.toString())}
               <Heart className="w-4 h-4 text-red-600 fill-red-600 animate-pulse" />
-              e muito café.
+              {t.footer.bottom.andCoffee}
             </p>
           </div>
 
-          {/* Back to Top */}
           <Button
             variant="ghost"
             size="sm"
             onClick={scrollToTop}
             className="text-slate-400 hover:text-white hover:bg-white/10 group"
           >
-            Voltar ao topo
+            {t.footer.bottom.backToTop}
             <ArrowUp className="w-4 h-4 ml-2 group-hover:-translate-y-1 transition-transform" />
           </Button>
         </div>
 
       </div>
 
-      {/* Decorative gradient */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-slate-950 to-transparent pointer-events-none" />
     
     </footer>

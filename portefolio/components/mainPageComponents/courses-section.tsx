@@ -2,14 +2,15 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
+import { Badge } from "@/components/ui/badge"
 import { Award, ExternalLink, Calendar, ArrowRight, Loader2, GraduationCap } from "lucide-react"
 import { supabase, type Course } from "@/lib/supabase"
 import Link from "next/link"
+import { useTranslation } from "@/lib/hooks/useTranslation"
 
 export function CoursesSection() {
+  const { t } = useTranslation()
   const [courses, setCourses] = useState<Course[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -43,11 +44,11 @@ export function CoursesSection() {
   const getImportanceBadge = (importance: string | null) => {
     switch (importance) {
       case 'high':
-        return { label: 'Alta Relevância', color: 'bg-red-100 text-red-800 border-red-300' }
+        return { label: t.courses.importance.high, color: 'bg-red-100 text-red-800 border-red-300' }
       case 'medium':
-        return { label: 'Média Relevância', color: 'bg-amber-100 text-amber-800 border-amber-300' }
+        return { label: t.courses.importance.medium, color: 'bg-amber-100 text-amber-800 border-amber-300' }
       case 'low':
-        return { label: 'Baixa Relevância', color: 'bg-slate-100 text-slate-800 border-slate-300' }
+        return { label: t.courses.importance.low, color: 'bg-slate-100 text-slate-800 border-slate-300' }
       default:
         return null
     }
@@ -86,10 +87,10 @@ export function CoursesSection() {
           </div>
           <div>
             <h2 className="text-4xl md:text-5xl font-bold text-white drop-shadow-lg">
-              Licenças & Certificações
+              {t.courses.title}
             </h2>
-            <p className="text-white/90 text-lg mt-2">
-              Cursos e certificações que complementam a minha formação
+            <p className="text-white/90 text-lg mt-2 text-justify">
+              {t.courses.subtitle}
             </p>
           </div>
         </div>
@@ -99,7 +100,7 @@ export function CoursesSection() {
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-12 text-center border border-white/20">
             <Award className="w-16 h-16 text-white/50 mx-auto mb-4" />
             <p className="text-white/90 text-xl">
-              Nenhum curso em destaque no momento.
+              {t.courses.noCourses}
             </p>
           </div>
         ) : (
@@ -180,7 +181,7 @@ export function CoursesSection() {
                         >
                           <a href={course.certificate_url} target="_blank" rel="noopener noreferrer">
                             <Award className="w-4 h-4 mr-2" />
-                            Ver Certificado
+                            {t.courses.viewCertificate}
                             <ExternalLink className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
                           </a>
                         </Button>
@@ -201,7 +202,7 @@ export function CoursesSection() {
             asChild
           >
             <Link href="/courses">
-              Consultar Todos os Cursos
+              {t.courses.viewAll}
               <ArrowRight className="ml-3 w-6 h-6 group-hover:translate-x-2 transition-transform" />
             </Link>
           </Button>

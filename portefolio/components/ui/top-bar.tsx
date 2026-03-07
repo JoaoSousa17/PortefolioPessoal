@@ -1,70 +1,29 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { usePathname, useRouter } from "next/navigation"
+import { useState } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Languages, Menu, X, Home } from "lucide-react"
+
+// Hooks de tradução e contexto
+import { useLanguage } from "@/lib/context/LanguageContext"
+import { useTranslation } from "@/lib/hooks/useTranslation"
 
 const languages = [
   { code: "pt", label: "PT", flag: "🇵🇹" },
   { code: "en", label: "EN", flag: "🇬🇧" },
 ]
 
-const navItems = [
-  { name: "Sobre", href: "#about" },
-  { name: "Projetos", href: "#projects" },
-  { name: "Formação", href: "#schools" },
-  { name: "Skills", href: "#skills" },
-  { name: "Contacto", href: "#contact" },
-  { name: "Blog", href: "#blog" },
-]
-
 export function TopBar() {
-  const router = useRouter()
-  const pathname = usePathname()
-  const currentLang = pathname.split("/")[1] || "pt"
+  const { language, setLanguage } = useLanguage()
+  const { t } = useTranslation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  // Detecta hash na URL e faz scroll quando a página carregar
-  useEffect(() => {
-    const hash = window.location.hash
-    if (hash && pathname === '/') {
-      // Delay para garantir que o DOM está pronto
-      const timer = setTimeout(() => {
-        const element = document.querySelector(hash)
-        if (element) {
-          const offset = 80
-          const elementPosition = element.getBoundingClientRect().top
-          const offsetPosition = elementPosition + window.pageYOffset - offset
-
-          window.scrollTo({
-            top: offsetPosition,
-            behavior: "smooth"
-          })
-        }
-      }, 300)
-      
-      return () => clearTimeout(timer)
-    }
-  }, [pathname])
-
-  function handleLanguageChange(lang: string) {
-    const segments = pathname.split("/")
-    segments[1] = lang
-    router.push(segments.join("/"))
-  }
+  const navButtonClass = 
+    "text-slate-300 hover:text-white hover:bg-white/10 font-medium transition-all duration-200"
 
   function scrollToSection(href: string) {
-    // Se não estamos na home page, navega para home com hash
-    if (pathname !== '/' && pathname !== '') {
-      router.push('/' + href)
-      setMobileMenuOpen(false)
-      return
-    }
-
-    // Se estamos na home page, faz scroll direto
     if (href.startsWith("#")) {
       const element = document.querySelector(href)
       if (element) {
@@ -76,12 +35,9 @@ export function TopBar() {
           top: offsetPosition,
           behavior: "smooth"
         })
-        setMobileMenuOpen(false)
       }
-    } else {
-      router.push(href)
-      setMobileMenuOpen(false)
     }
+    setMobileMenuOpen(false)
   }
 
   function scrollToTop() {
@@ -98,7 +54,6 @@ export function TopBar() {
           <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-red-600 to-red-700 flex items-center justify-center shadow-lg hover:scale-105 transition-transform">
             <span className="text-white font-bold text-lg">JS</span>
           </div>
-          {/* Show name on min-width 400px and up */}
           <span className="font-bold text-lg text-white hidden min-[400px]:inline">
             João Sousa
           </span>
@@ -106,11 +61,18 @@ export function TopBar() {
 
         {/* Desktop Navigation */}
         <nav className="hidden lg:flex items-center gap-1">
-          {navItems.map((item) => (
+          {[
+            { name: t.nav.about, href: "#about" },
+            { name: t.nav.projects, href: "#projects" },
+            { name: t.nav.education, href: "#schools" },
+            { name: t.nav.skills, href: "#skills" },
+            { name: t.nav.contact, href: "#contact" },
+            { name: t.nav.blog, href: "#blog" },
+          ].map((item) => (
             <Button
-              key={item.name}
+              key={item.href}
               variant="ghost"
-              className="text-slate-300 hover:text-white hover:bg-white/10 font-medium transition-colors"
+              className={navButtonClass}
               onClick={() => scrollToSection(item.href)}
             >
               {item.name}
@@ -124,8 +86,8 @@ export function TopBar() {
           {/* Language Selector */}
           <div className="flex items-center gap-2">
             <Languages className="w-4 h-4 text-slate-400 hidden sm:block" />
-            <Select value={currentLang} onValueChange={handleLanguageChange}>
-              <SelectTrigger className="w-[90px] sm:w-[100px] h-9 bg-slate-800 border-slate-700 text-white hover:bg-slate-750 transition-colors">
+            <Select value={language} onValueChange={setLanguage}>
+              <SelectTrigger className="w-[90px] sm:w-[100px] h-9 bg-slate-800 border-slate-700 text-white hover:bg-slate-750 transition-colors focus:ring-red-500/50">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-slate-800 border-slate-700">
@@ -133,7 +95,7 @@ export function TopBar() {
                   <SelectItem 
                     key={lang.code} 
                     value={lang.code}
-                    className="text-white hover:bg-slate-700 cursor-pointer"
+                    className="text-white focus:bg-slate-700 focus:text-white cursor-pointer"
                   >
                     <span className="flex items-center gap-2">
                       <span className="text-base">{lang.flag}</span>
@@ -145,17 +107,17 @@ export function TopBar() {
             </Select>
           </div>
 
-          {/* Mobile Menu */}
+          {/* Mobile Menu Button */}
           <Button 
             variant="ghost" 
             size="icon" 
             className="text-white hover:bg-white/10 flex-shrink-0 lg:hidden"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            <Menu className="w-5 h-5" />
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </Button>
 
-          {/* Custom Mobile Menu Overlay */}
+          {/* Mobile Menu Overlay */}
           {mobileMenuOpen && (
             <>
               {/* Backdrop */}
@@ -177,7 +139,7 @@ export function TopBar() {
                         </div>
                         <div>
                           <h2 className="font-bold text-lg text-white">João Sousa</h2>
-                          <p className="text-xs text-slate-400">Menu de Navegação</p>
+                          <p className="text-xs text-slate-400">{language === 'pt' ? 'Menu de Navegação' : 'Navigation Menu'}</p>
                         </div>
                       </div>
                       <Button
@@ -192,72 +154,64 @@ export function TopBar() {
                   </div>
 
                   {/* Navigation Items */}
-                  <div className="py-3">
-                    {/* Home Button */}
-                    <div className="px-3 mb-2">
-                      <Button
-                        variant="ghost"
-                        className="w-full text-slate-300 hover:text-white hover:bg-red-600/10 font-medium justify-start text-sm h-11 group transition-all duration-200 rounded-lg"
-                        onClick={scrollToTop}
-                      >
-                        <Home className="w-4 h-4 mr-3 text-red-500 group-hover:scale-110 transition-transform" />
-                        <span>Home</span>
-                      </Button>
-                    </div>
+                  <div className="py-3 px-3">
+                    <Button
+                      variant="ghost"
+                      className="w-full text-slate-300 hover:text-white hover:bg-red-600/10 font-medium justify-start text-sm h-11 group transition-all duration-200 rounded-lg mb-2"
+                      onClick={scrollToTop}
+                    >
+                      <Home className="w-4 h-4 mr-3 text-red-500 group-hover:scale-110 transition-transform" />
+                      <span>Home</span>
+                    </Button>
 
-                    <div className="px-3 mb-2">
-                      <Separator className="bg-gradient-to-r from-transparent via-slate-600 to-transparent" />
-                    </div>
+                    <Separator className="mb-2 bg-gradient-to-r from-transparent via-slate-600 to-transparent" />
 
-                    {/* Navigation Items with Separators */}
-                    <div className="px-3 space-y-0.5">
-                      {navItems.map((item, index) => (
-                        <div key={item.name}>
-                          <Button
-                            variant="ghost"
-                            className="w-full text-slate-300 hover:text-white hover:bg-white/5 font-medium justify-start text-sm h-10 group transition-all duration-200 rounded-lg"
-                            onClick={() => scrollToSection(item.href)}
-                          >
-                            <div className="w-1.5 h-1.5 rounded-full bg-red-500 mr-3 group-hover:scale-150 transition-transform" />
-                            <span>{item.name}</span>
-                          </Button>
-                          {index < navItems.length - 1 && (
-                            <Separator className="my-0.5 bg-slate-700/20" />
-                          )}
-                        </div>
+                    <div className="space-y-1">
+                      {[
+                        { name: t.nav.about, href: "#about" },
+                        { name: t.nav.projects, href: "#projects" },
+                        { name: t.nav.education, href: "#schools" },
+                        { name: t.nav.skills, href: "#skills" },
+                        { name: t.nav.contact, href: "#contact" },
+                        { name: t.nav.blog, href: "#blog" },
+                      ].map((item) => (
+                        <Button
+                          key={item.href}
+                          variant="ghost"
+                          className="w-full text-slate-300 hover:text-white hover:bg-white/5 font-medium justify-start text-sm h-10 group transition-all duration-200 rounded-lg"
+                          onClick={() => scrollToSection(item.href)}
+                        >
+                          <div className="w-1.5 h-1.5 rounded-full bg-red-500 mr-3 group-hover:scale-150 transition-transform" />
+                          <span>{item.name}</span>
+                        </Button>
                       ))}
                     </div>
                   </div>
 
                   {/* Footer */}
-                  <div className="p-4 bg-slate-900/80 border-t border-slate-600">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Languages className="w-3.5 h-3.5 text-slate-400" />
-                        <span className="text-xs text-slate-400 font-medium">Idioma</span>
-                      </div>
-                      <Select value={currentLang} onValueChange={handleLanguageChange}>
-                        <SelectTrigger className="w-[100px] h-8 bg-slate-800 border-slate-700 text-white hover:bg-slate-750 transition-colors text-sm">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="bg-slate-800 border-slate-700">
-                          {languages.map(lang => (
-                            <SelectItem 
-                              key={lang.code} 
-                              value={lang.code}
-                              className="text-white hover:bg-slate-700 cursor-pointer"
-                            >
-                              <span className="flex items-center gap-2">
-                                <span className="text-base">{lang.flag}</span>
-                                <span>{lang.label}</span>
-                              </span>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                  <div className="p-4 bg-slate-900/80 border-t border-slate-600 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Languages className="w-3.5 h-3.5 text-slate-400" />
+                      <span className="text-xs text-slate-400 font-medium">
+                        {language === 'pt' ? 'Idioma' : 'Language'}
+                      </span>
                     </div>
+                    <Select value={language} onValueChange={setLanguage}>
+                      <SelectTrigger className="w-[100px] h-8 bg-slate-800 border-slate-700 text-white text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-800 border-slate-700">
+                        {languages.map(lang => (
+                          <SelectItem key={lang.code} value={lang.code} className="text-white text-xs cursor-pointer">
+                            <span className="flex items-center gap-2">
+                              <span>{lang.flag}</span>
+                              <span>{lang.label}</span>
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-
                 </div>
               </div>
             </>
