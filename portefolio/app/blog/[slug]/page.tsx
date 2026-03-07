@@ -11,12 +11,14 @@ import { supabase, type BlogPost, type BlogTag } from "@/lib/supabase"
 import { TopBar } from "@/components/ui/top-bar"
 import { Footer } from "@/components/ui/footer"
 import Link from "next/link"
+import { useTranslation } from "@/lib/hooks/useTranslation"
 
 type BlogPostWithTags = BlogPost & {
   tags: string[]
 }
 
 export default function BlogPostPage() {
+  const { t } = useTranslation()
   const params = useParams()
   const [post, setPost] = useState<BlogPostWithTags | null>(null)
   const [loading, setLoading] = useState(true)
@@ -29,7 +31,6 @@ export default function BlogPostPage() {
 
   const fetchPost = async (slug: string) => {
     try {
-      // Fetch post
       const { data: postData, error: postError } = await supabase
         .from('blog_posts')
         .select('*')
@@ -39,7 +40,6 @@ export default function BlogPostPage() {
 
       if (postError) throw postError
 
-      // Fetch tags
       const { data: tagsData, error: tagsError } = await supabase
         .from('blog_tags')
         .select('tag')
@@ -73,7 +73,7 @@ export default function BlogPostPage() {
     const wordsPerMinute = 200
     const words = content.trim().split(/\s+/).length
     const minutes = Math.ceil(words / wordsPerMinute)
-    return `${minutes} min de leitura`
+    return t.blogPage.readingTime.replace('{minutes}', minutes.toString())
   }
 
   const handleShare = () => {
@@ -85,7 +85,7 @@ export default function BlogPostPage() {
       })
     } else {
       navigator.clipboard.writeText(window.location.href)
-      alert('Link copiado para a área de transferência!')
+      alert(t.blogPage.copiedLink)
     }
   }
 
@@ -107,9 +107,9 @@ export default function BlogPostPage() {
         <TopBar />
         <div className="flex-grow flex items-center justify-center p-6">
           <Card className="max-w-md w-full p-8 text-center">
-            <p className="text-xl text-slate-700 mb-4">Artigo não encontrado</p>
+            <p className="text-xl text-slate-700 mb-4">{t.blogPage.notFound}</p>
             <Button asChild>
-              <Link href="/blog">Voltar ao blog</Link>
+              <Link href="/blog">{t.blogPage.backToBlog}</Link>
             </Button>
           </Card>
         </div>
@@ -138,7 +138,7 @@ export default function BlogPostPage() {
             >
               <Link href="/blog">
                 <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-                Voltar ao blog
+                {t.blogPage.backToBlog}
               </Link>
             </Button>
 
@@ -177,7 +177,7 @@ export default function BlogPostPage() {
                 className="ml-auto text-white hover:bg-white/10"
               >
                 <Share2 className="w-4 h-4 mr-2" />
-                Partilhar
+                {t.blogPage.share}
               </Button>
             </div>
 
@@ -217,7 +217,6 @@ export default function BlogPostPage() {
                 <article className="prose prose-slate prose-lg max-w-none">
                   <div className="text-slate-700 leading-relaxed whitespace-pre-line">
                     {post._content?.split('\n').map((paragraph, index) => {
-                      // Check if it's a heading (starts with ##)
                       if (paragraph.trim().startsWith('## ')) {
                         return (
                           <h2 key={index} className="text-3xl font-bold text-slate-900 mt-10 mb-6 first:mt-0 text-justify">
@@ -225,7 +224,6 @@ export default function BlogPostPage() {
                           </h2>
                         )
                       }
-                      // Regular paragraph
                       if (paragraph.trim()) {
                         return (
                           <p key={index} className="mb-6 text-lg text-justify">
@@ -244,7 +242,7 @@ export default function BlogPostPage() {
                 <Card className="bg-white border-0 shadow-xl p-6 md:p-8">
                   <div className="flex items-center gap-3 mb-4">
                     <Tag className="w-5 h-5 text-red-700" />
-                    <h3 className="text-xl font-bold text-slate-900">Tags</h3>
+                    <h3 className="text-xl font-bold text-slate-900">{t.blogPage.tags}</h3>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {post.tags.map((tag, index) => (
@@ -263,9 +261,7 @@ export default function BlogPostPage() {
               {/* Back to Blog */}
               <div className="mt-12 text-center">
                 <Separator className="mb-8" />
-                <p className="text-slate-600 mb-6 text-lg">
-                  Gostou deste artigo? Leia mais!
-                </p>
+                <p className="text-slate-600 mb-6 text-lg">{t.blogPage.readMorePrompt}</p>
                 <Button
                   size="lg"
                   variant="outline"
@@ -274,7 +270,7 @@ export default function BlogPostPage() {
                 >
                   <Link href="/blog">
                     <ArrowLeft className="w-5 h-5 mr-2 rotate-180" />
-                    Ver Todos os Artigos
+                    {t.blogPage.backToBlog}
                   </Link>
                 </Button>
               </div>

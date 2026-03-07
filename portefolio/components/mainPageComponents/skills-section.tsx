@@ -4,12 +4,15 @@ import { useState, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Sparkles, Loader2 } from "lucide-react"
 import { supabase, type Skill, type SkillCategory } from "@/lib/supabase"
+import { useTranslation } from "@/lib/hooks/useTranslation"
 
 type SkillWithCategory = Skill & {
   category: SkillCategory
 }
 
 export function SkillsSection() {
+  const { t } = useTranslation()
+
   const [skillsByCategory, setSkillsByCategory] = useState<Record<string, SkillWithCategory[]>>({})
   const [loading, setLoading] = useState(true)
 
@@ -33,9 +36,8 @@ export function SkillsSection() {
 
       if (skillsError) throw skillsError
 
-      // Group skills by category
       const grouped: Record<string, SkillWithCategory[]> = {}
-      
+
       categoriesData?.forEach(category => {
         const categorySkills = skillsData
           ?.filter(skill => skill.category_id === category.id)
@@ -43,7 +45,7 @@ export function SkillsSection() {
             ...skill,
             category
           })) || []
-        
+
         if (categorySkills.length > 0) {
           grouped[category.name] = categorySkills
         }
@@ -57,16 +59,15 @@ export function SkillsSection() {
     }
   }
 
-  // Function to determine if color is light or dark for text contrast
   const getTextColor = (bgColor: string | null) => {
     if (!bgColor) return '#ffffff'
-    
+
     const hex = bgColor.replace('#', '')
     const r = parseInt(hex.substr(0, 2), 16)
     const g = parseInt(hex.substr(2, 2), 16)
     const b = parseInt(hex.substr(4, 2), 16)
     const brightness = (r * 299 + g * 587 + b * 114) / 1000
-    
+
     return brightness > 155 ? '#1e293b' : '#ffffff'
   }
 
@@ -84,7 +85,7 @@ export function SkillsSection() {
 
   return (
     <section className="relative w-full bg-[#E8E2E1] py-16 md:py-24 overflow-hidden">
-      
+
       {/* Decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute w-[500px] h-[500px] top-1/4 -right-32 bg-red-700/5 rounded-full blur-3xl" />
@@ -95,7 +96,7 @@ export function SkillsSection() {
       <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-white via-gray-100 to-white" />
 
       <div className="relative container mx-auto px-6">
-        
+
         {/* Header */}
         <div className="flex items-center gap-4 mb-12 animate-in fade-in slide-in-from-bottom">
           <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center shadow-xl">
@@ -103,10 +104,10 @@ export function SkillsSection() {
           </div>
           <div>
             <h2 className="text-4xl md:text-5xl font-bold text-slate-900">
-              Skills & Competências
+              {t.skills.title}
             </h2>
             <p className="text-slate-700 text-lg mt-2 text-justify">
-              Tecnologias e habilidades que domino
+              {t.skills.subtitle}
             </p>
           </div>
         </div>
@@ -116,13 +117,13 @@ export function SkillsSection() {
           <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-12 text-center border-2 border-slate-300">
             <Sparkles className="w-16 h-16 text-slate-400 mx-auto mb-4" />
             <p className="text-slate-700 text-xl">
-              Nenhuma skill registada no momento.
+              {t.skills.empty}
             </p>
           </div>
         ) : (
           <div className="space-y-12">
             {Object.entries(skillsByCategory).map(([categoryName, skills], categoryIndex) => (
-              <div 
+              <div
                 key={categoryName}
                 className="animate-in fade-in slide-in-from-bottom"
                 style={{ animationDelay: `${categoryIndex * 100}ms` }}
@@ -148,17 +149,15 @@ export function SkillsSection() {
                         animationDelay: `${(categoryIndex * 100) + (index * 50)}ms`
                       }}
                     >
-                      {/* Shine effect on hover */}
                       <div className="absolute inset-0 rounded-md bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 group-hover:animate-shine" />
-                      
+
                       <div className="relative flex items-center gap-2.5">
                         {skill.icon && (
-                          <img 
-                            src={skill.icon} 
+                          <img
+                            src={skill.icon}
                             alt={skill.name}
                             className="w-5 h-5 object-contain group-hover:scale-110 transition-transform duration-300"
                             onError={(e) => {
-                              // Hide icon if it fails to load
                               e.currentTarget.style.display = 'none'
                             }}
                           />

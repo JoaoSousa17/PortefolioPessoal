@@ -1,15 +1,24 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Lock, User, Loader2, Shield, AlertCircle, ArrowLeft, KeyRound, Sparkles } from "lucide-react"
 import { supabase } from "@/lib/supabase"
+import { useTranslation } from "@/lib/hooks/useTranslation"
+
+type Particle = {
+  left: string
+  top: string
+  duration: string
+  delay: string
+}
 
 export default function AuthPage() {
+  const { t } = useTranslation()
   const router = useRouter()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -17,6 +26,19 @@ export default function AuthPage() {
   const [error, setError] = useState('')
   const [focusedField, setFocusedField] = useState<string | null>(null)
 
+  const [particles, setParticles] = useState<Particle[]>([])
+
+  useEffect(() => {
+    const generated = Array.from({ length: 20 }, () => ({
+      left: `${Math.random() * 100}%`,
+      top: `${Math.random() * 100}%`,
+      duration: `${5 + Math.random() * 10}s`,
+      delay: `${Math.random() * 5}s`,
+    }))
+
+    setParticles(generated)
+  }, [])
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -36,11 +58,11 @@ export default function AuthPage() {
         localStorage.setItem('admin_username', username)
         router.push('/admin')
       } else {
-        setError('Username ou password incorretos')
+        setError(t.auth.errors.invalidCredentials)
       }
     } catch (error) {
       console.error('Error logging in:', error)
-      setError('Erro ao fazer login. Tenta novamente.')
+      setError(t.auth.errors.generic)
     } finally {
       setLoading(false)
     }
@@ -60,18 +82,20 @@ export default function AuthPage() {
              style={{ animationDuration: '6s', animationDelay: '2s' }} />
         
         {/* Floating particles */}
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-2 h-2 bg-white/20 rounded-full"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animation: `float ${5 + Math.random() * 10}s linear infinite`,
-              animationDelay: `${Math.random() * 5}s`
-            }}
-          />
-        ))}
+        <>
+          {particles.map((p, i) => (
+            <div
+              key={i}
+              className="absolute w-2 h-2 bg-white/20 rounded-full"
+              style={{
+                left: p.left,
+                top: p.top,
+                animation: `float ${p.duration} linear infinite`,
+                animationDelay: p.delay,
+              }}
+            />
+          ))}
+        </>
       </div>
 
       <style jsx>{`
@@ -91,7 +115,7 @@ export default function AuthPage() {
           onClick={() => router.push('/')}
         >
           <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-          Voltar à página inicial
+          {t.auth.back}
         </Button>
       </div>
 
@@ -114,10 +138,10 @@ export default function AuthPage() {
             </div>
 
             <h1 className="text-5xl font-black text-white mb-3 drop-shadow-2xl">
-              Admin Access
+              {t.auth.title}
             </h1>
             <p className="text-white/80 text-lg">
-              Área restrita • Autenticação requerida
+              {t.auth.subtitle}
             </p>
           </div>
 
@@ -139,7 +163,7 @@ export default function AuthPage() {
                       <AlertCircle className="w-5 h-5 text-white" />
                     </div>
                     <div className="flex-1">
-                      <p className="font-bold text-red-900 text-lg">Erro de autenticação</p>
+                      <p className="font-bold text-red-900 text-lg">{t.auth.errors.title}</p>
                       <p className="text-sm text-red-700 mt-1">{error}</p>
                     </div>
                   </div>
@@ -160,13 +184,13 @@ export default function AuthPage() {
                         focusedField === 'username' ? 'text-white' : 'text-slate-600'
                       }`} />
                     </div>
-                    Username
+                    {t.auth.username}
                   </Label>
                   <div className="relative">
                     <Input
                       id="username"
                       type="text"
-                      placeholder="Digite o seu username"
+                      placeholder={t.auth.usernamePlaceholder}
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       onFocus={() => setFocusedField('username')}
@@ -198,13 +222,13 @@ export default function AuthPage() {
                         focusedField === 'password' ? 'text-white' : 'text-slate-600'
                       }`} />
                     </div>
-                    Password
+                    {t.auth.password}
                   </Label>
                   <div className="relative">
                     <Input
                       id="password"
                       type="password"
-                      placeholder="Digite a sua password"
+                      placeholder={t.auth.passwordPlaceholder}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       onFocus={() => setFocusedField('password')}
@@ -227,35 +251,21 @@ export default function AuthPage() {
                   disabled={loading}
                   className="w-full bg-gradient-to-r from-red-700 via-red-600 to-red-700 hover:from-red-800 hover:via-red-700 hover:to-red-800 text-white shadow-[0_8px_32px_rgba(220,38,38,0.4)] hover:shadow-[0_12px_48px_rgba(220,38,38,0.6)] transition-all duration-300 h-16 text-lg font-black rounded-xl mt-8 group relative overflow-hidden border-2 border-red-500/50 hover:scale-[1.02] active:scale-[0.98]"
                 >
-                  {/* Animated background effect */}
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                   
                   {loading ? (
                     <>
                       <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      A autenticar...
+                      {t.auth.loading}
                     </>
                   ) : (
                     <>
                       <KeyRound className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform" />
-                      Entrar no Admin
+                      {t.auth.submit}
                       <Sparkles className="w-4 h-4 ml-2 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </>
                   )}
                 </Button>
-
-                {/* Security notice */}
-                <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 mt-6">
-                  <div className="flex items-start gap-3">
-                    <Shield className="w-5 h-5 text-slate-600 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-semibold text-slate-900">Conexão segura</p>
-                      <p className="text-xs text-slate-600 mt-1">
-                        Os seus dados são protegidos com encriptação de ponta a ponta
-                      </p>
-                    </div>
-                  </div>
-                </div>
               </form>
             </CardContent>
           </Card>
@@ -263,7 +273,7 @@ export default function AuthPage() {
           {/* Bottom decoration */}
           <div className="text-center mt-8 animate-in fade-in" style={{ animationDelay: '400ms' }}>
             <p className="text-white/60 text-sm">
-              Desenvolvido com ❤️ por João Sousa
+              {t.auth.footer}
             </p>
           </div>
         </div>

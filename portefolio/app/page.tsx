@@ -21,6 +21,8 @@ import { useEffect } from "react"
 export default function HomePage() {
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" })
+    
     console.log(`
 %c👋 Olá, dev curioso.
 

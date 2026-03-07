@@ -9,8 +9,6 @@ import {
   Instagram, 
   Facebook, 
   Github, 
-  MessageCircle, 
-  Mail,
   ExternalLink,
   Loader2
 } from "lucide-react"
@@ -24,8 +22,6 @@ type ProfileData = {
   instagram_url: string | null
   facebook_url: string | null
   github_url: string | null
-  whatsapp_url: string | null
-  email: string | null
   website1_url: string | null
   website1_name: string | null
   website1_image: string | null
@@ -37,7 +33,7 @@ type ProfileData = {
   website3_image: string | null
 }
 
-export default function LinktreePage() {
+export default function InstagramCardPage() {
   const [profile, setProfile] = useState<ProfileData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -71,11 +67,11 @@ export default function LinktreePage() {
       textColor: 'text-white'
     },
     {
-      name: 'GitHub',
-      url: profile?.github_url,
-      icon: Github,
-      color: 'bg-[#181717] hover:bg-[#000000]',
-      textColor: 'text-white'
+        name: 'GitHub',
+        url: profile?.github_url,
+        icon: Github,
+        color: 'bg-[#181717] hover:bg-[#000000]',
+        textColor: 'text-white'
     },
     {
       name: 'Instagram',
@@ -90,21 +86,8 @@ export default function LinktreePage() {
       icon: Facebook,
       color: 'bg-[#1877F2] hover:bg-[#0C63D4]',
       textColor: 'text-white'
-    },
-    {
-      name: 'WhatsApp',
-      url: profile?.whatsapp_url,
-      icon: MessageCircle,
-      color: 'bg-[#25D366] hover:bg-[#1EBE57]',
-      textColor: 'text-white'
-    },
-    {
-      name: 'Email',
-      url: profile?.email ? `mailto:${profile.email}` : null,
-      icon: Mail,
-      color: 'bg-[#EA4335] hover:bg-[#C5341E]',
-      textColor: 'text-white'
     }
+    
   ].filter(button => button.url)
 
   const websites = [
@@ -215,42 +198,9 @@ export default function LinktreePage() {
             <p className="text-slate-700 text-center leading-relaxed mb-1 text-sm animate-in fade-in slide-in-from-bottom duration-700 whitespace-pre-line" style={{ animationDelay: '400ms', animationFillMode: 'backwards' }} >
                 {profile.bio_long}
             </p>
-            <p className="text-slate-700 text-center leading-relaxed mb-6 text-sm animate-in fade-in slide-in-from-bottom duration-700 whitespace-pre-line" style={{ animationDelay: '400ms', animationFillMode: 'backwards' }} >
+            <p className="text-slate-700 text-center leading-relaxed mb-8 text-sm animate-in fade-in slide-in-from-bottom duration-700 whitespace-pre-line" style={{ animationDelay: '400ms', animationFillMode: 'backwards' }} >
                 Inventor, Developer, Entrepreneur
             </p>
-            {/* Save as Contact Button */}
-            <div className="flex justify-center mb-8 animate-in fade-in slide-in-from-bottom duration-700"
-                 style={{ animationDelay: '450ms', animationFillMode: 'backwards' }}>
-              <Button
-                asChild
-                className="
-                      px-8 py-3 rounded-full
-                      w-full font-bold text-white
-                      bg-gradient-to-r from-red-600 to-red-700
-                      transition-all duration-300 ease-out
-                      hover:brightness-110 hover:saturate-110
-                      hover:ring-2 hover:ring-red-500/40
-                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500
-                    "
-              >
-                <a href="/contact.vcf" download="contact.vcf" className="flex items-center gap-2">
-                  <svg 
-                    className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      strokeWidth={2} 
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" 
-                    />
-                  </svg>
-                  Save as Contact
-                </a>
-              </Button>
-            </div>
 
             {/* LINKS Separator */}
             <div className="relative my-8 animate-in fade-in slide-in-from-left duration-700"
@@ -295,7 +245,7 @@ export default function LinktreePage() {
               ))}
             </div>
 
-            {/* Separator */}
+            {/* Websites Separator */}
             {websites.length > 0 && (
               <div className="relative my-8 animate-in fade-in slide-in-from-right duration-700"
                    style={{ animationDelay: `${600 + (socialButtons.length * 80)}ms`, animationFillMode: 'backwards' }}>
@@ -356,7 +306,7 @@ export default function LinktreePage() {
                             {website.name}
                           </h3>
                           <p className="text-white/90 text-sm mt-1 drop-shadow flex items-center gap-2">
-                            Portefólio
+                            Portfolio
                             <span className="inline-block group-hover:translate-x-1 transition-transform">→</span>
                           </p>
                         </div>
