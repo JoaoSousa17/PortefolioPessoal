@@ -7,8 +7,15 @@ import { Quote, Loader2 } from "lucide-react"
 import { supabase, type Testimonial } from "@/lib/supabase"
 import { useTranslation } from "@/lib/hooks/useTranslation"
 
+function getTranslated(item: any, field: string, lang: string): string {
+  return item.translations?.[lang]?.[field]
+      || item.translations?.['en']?.[field]
+      || item[field]
+      || ''
+}
+
 export function TestimonialsSection() {
-  const { t } = useTranslation()
+  const { t, language } = useTranslation()
 
   const [testimonials, setTestimonials] = useState<Testimonial[]>([])
   const [loading, setLoading] = useState(true)
@@ -20,11 +27,9 @@ export function TestimonialsSection() {
 
   useEffect(() => {
     if (testimonials.length === 0) return
-
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % testimonials.length)
     }, 6000)
-
     return () => clearInterval(interval)
   }, [testimonials.length])
 
@@ -59,7 +64,7 @@ export function TestimonialsSection() {
 
   return (
     <section className="relative w-full bg-[#A99290] py-16 md:py-24 overflow-hidden">
-      
+
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute w-[500px] h-[500px] -top-32 -right-32 bg-red-700/10 rounded-full blur-3xl" />
         <div className="absolute w-[400px] h-[400px] -bottom-24 -left-24 bg-slate-800/10 rounded-full blur-3xl" />
@@ -68,7 +73,7 @@ export function TestimonialsSection() {
       <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-white via-gray-100 to-white" />
 
       <div className="relative container mx-auto px-6">
-        
+
         <div className="flex items-center gap-4 mb-12 animate-in fade-in slide-in-from-bottom">
           <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-red-700 to-red-800 flex items-center justify-center shadow-xl">
             <Quote className="w-7 h-7 text-white" />
@@ -98,48 +103,50 @@ export function TestimonialsSection() {
               </div>
 
               <div className="relative">
-                {testimonials.map((testimonial, index) => (
-                  <div
-                    key={testimonial.id}
-                    className={`transition-all duration-700 ${
-                      index === currentIndex
-                        ? "opacity-100 translate-x-0"
-                        : "opacity-0 absolute inset-0 translate-x-8 pointer-events-none"
-                    }`}
-                  >
-                    <div className="text-center mb-8">
-                      <p className="text-xl md:text-2xl text-slate-700 leading-relaxed italic mb-6">
-                        "{testimonial.content}"
-                      </p>
-                    </div>
+                {testimonials.map((testimonial, index) => {
+                  const content = getTranslated(testimonial, 'content', language)
+                  const role    = getTranslated(testimonial, 'role', language)
 
-                    <div className="flex flex-col items-center gap-4">
-                      <Avatar className="w-20 h-20 border-4 border-slate-200 shadow-lg">
-                        <AvatarImage
-                          src={testimonial.image_url || undefined}
-                          alt={testimonial.author_name}
-                        />
-                        <AvatarFallback className="text-xl font-bold bg-gradient-to-br from-red-600 to-red-800 text-white">
-                          {testimonial.author_name
-                            .split(" ")
-                            .map(n => n[0])
-                            .join("")}
-                        </AvatarFallback>
-                      </Avatar>
-
-                      <div className="text-center">
-                        <p className="text-xl font-bold text-slate-900">
-                          {testimonial.author_name}
+                  return (
+                    <div
+                      key={testimonial.id}
+                      className={`transition-all duration-700 ${
+                        index === currentIndex
+                          ? "opacity-100 translate-x-0"
+                          : "opacity-0 absolute inset-0 translate-x-8 pointer-events-none"
+                      }`}
+                    >
+                      <div className="text-center mb-8">
+                        <p className="text-xl md:text-2xl text-slate-700 leading-relaxed italic mb-6">
+                          "{content}"
                         </p>
-                        {testimonial.role && (
-                          <p className="text-base text-slate-600 font-medium">
-                            {testimonial.role}
+                      </div>
+
+                      <div className="flex flex-col items-center gap-4">
+                        <Avatar className="w-20 h-20 border-4 border-slate-200 shadow-lg">
+                          <AvatarImage
+                            src={testimonial.image_url || undefined}
+                            alt={testimonial.author_name}
+                          />
+                          <AvatarFallback className="text-xl font-bold bg-gradient-to-br from-red-600 to-red-800 text-white">
+                            {testimonial.author_name.split(" ").map(n => n[0]).join("")}
+                          </AvatarFallback>
+                        </Avatar>
+
+                        <div className="text-center">
+                          <p className="text-xl font-bold text-slate-900">
+                            {testimonial.author_name}
                           </p>
-                        )}
+                          {role && (
+                            <p className="text-base text-slate-600 font-medium">
+                              {role}
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </Card>
 

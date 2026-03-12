@@ -9,8 +9,15 @@ import { Heart, ExternalLink, Award, Users, Sparkles, Lock, Loader2, Calendar } 
 import { supabase, type SocialProject } from "@/lib/supabase"
 import { useTranslation } from "@/lib/hooks/useTranslation"
 
+function getTranslated(item: any, field: string, lang: string): string {
+  return item.translations?.[lang]?.[field]
+      || item.translations?.['en']?.[field]
+      || item[field]
+      || ''
+}
+
 export function SocialSection() {
-  const { t } = useTranslation()
+  const { t, language } = useTranslation()
 
   const [volunteerProjects, setVolunteerProjects] = useState<SocialProject[]>([])
   const [otherProject, setOtherProject] = useState<SocialProject | null>(null)
@@ -38,9 +45,9 @@ export function SocialSection() {
         .eq("is_public", true)
         .eq("is_voluntariado", false)
         .limit(1)
-        .single()
+        .maybeSingle()
 
-      if (otherError && otherError.code !== "PGRST116") throw otherError
+      if (otherError) throw otherError
       setOtherProject(other)
     } catch (error) {
       console.error("Error fetching social projects:", error)
@@ -92,6 +99,8 @@ export function SocialSection() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+
+          {/* Voluntariado */}
           <div className="animate-in fade-in slide-in-from-left" style={{ animationDelay: "100ms" }}>
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center">
@@ -112,89 +121,94 @@ export function SocialSection() {
             ) : (
               <Card className="bg-white border-0 shadow-xl overflow-hidden">
                 <div className="divide-y divide-slate-200">
-                  {volunteerProjects.map(project => (
-                    <div
-                      key={project.id}
-                      className="group relative p-6 md:p-8 hover:bg-slate-50 transition-all duration-300"
-                    >
-                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-red-700 to-red-800 scale-y-0 group-hover:scale-y-100 transition-transform duration-300 origin-top" />
+                  {volunteerProjects.map(project => {
+                    const title       = getTranslated(project, 'title', language)
+                    const description = getTranslated(project, '_description', language)
 
-                      <div className="flex gap-4">
-                        <div className="flex-shrink-0">
-                          <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-slate-100 border-2 border-slate-200 flex items-center justify-center overflow-hidden shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300">
-                            {project.instituition_logo ? (
-                              <img
-                                src={project.instituition_logo}
-                                alt={project.institution_name || ""}
-                                className="w-full h-full object-contain p-2"
-                              />
-                            ) : (
-                              <Heart className="w-8 h-8 md:w-10 md:h-10 text-slate-400" />
-                            )}
+                    return (
+                      <div
+                        key={project.id}
+                        className="group relative p-6 md:p-8 hover:bg-slate-50 transition-all duration-300"
+                      >
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-red-700 to-red-800 scale-y-0 group-hover:scale-y-100 transition-transform duration-300 origin-top" />
+
+                        <div className="flex gap-4">
+                          <div className="flex-shrink-0">
+                            <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-slate-100 border-2 border-slate-200 flex items-center justify-center overflow-hidden shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300">
+                              {project.instituition_logo ? (
+                                <img
+                                  src={project.instituition_logo}
+                                  alt={project.institution_name || ""}
+                                  className="w-full h-full object-contain p-2"
+                                />
+                              ) : (
+                                <Heart className="w-8 h-8 md:w-10 md:h-10 text-slate-400" />
+                              )}
+                            </div>
                           </div>
-                        </div>
 
-                        <div className="flex-grow min-w-0">
-                          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-3">
-                            <div className="flex-grow">
-                              <h4 className="text-xl md:text-2xl font-bold text-slate-900 group-hover:text-red-700 transition-colors mb-2 leading-tight">
-                                {project.title}
-                              </h4>
-                              <p className="text-base md:text-lg font-semibold text-slate-700 mb-2">
-                                {project.institution_name}
-                              </p>
+                          <div className="flex-grow min-w-0">
+                            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-3">
+                              <div className="flex-grow">
+                                <h4 className="text-xl md:text-2xl font-bold text-slate-900 group-hover:text-red-700 transition-colors mb-2 leading-tight">
+                                  {title}
+                                </h4>
+                                <p className="text-base md:text-lg font-semibold text-slate-700 mb-2">
+                                  {project.institution_name}
+                                </p>
+                              </div>
+
+                              {project.date && (
+                                <div className="flex items-center gap-2 text-slate-600">
+                                  <Calendar className="w-4 h-4" />
+                                  <span className="text-sm font-medium">
+                                    {formatDate(project.date)}
+                                  </span>
+                                </div>
+                              )}
                             </div>
 
-                            {project.date && (
-                              <div className="flex items-center gap-2 text-slate-600">
-                                <Calendar className="w-4 h-4" />
-                                <span className="text-sm font-medium">
-                                  {formatDate(project.date)}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-
-                          {project._description && (
-                            <p className="text-slate-600 leading-relaxed mb-4 text-sm md:text-base text-justify">
-                              {project._description}
-                            </p>
-                          )}
-
-                          <div className="flex flex-wrap gap-3">
-                            {project.institution_link && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-slate-700 hover:text-slate-900 hover:bg-slate-100 font-semibold group/btn pl-0"
-                                asChild
-                              >
-                                <a href={project.institution_link} target="_blank" rel="noopener noreferrer">
-                                  {t.social.visitInstitution}
-                                  <ExternalLink className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
-                                </a>
-                              </Button>
+                            {description && (
+                              <p className="text-slate-600 leading-relaxed mb-4 text-sm md:text-base text-justify">
+                                {description}
+                              </p>
                             )}
 
-                            {project.certificate_url && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-red-700 hover:text-red-800 hover:bg-red-50 font-semibold group/btn pl-0"
-                                asChild
-                              >
-                                <a href={project.certificate_url} target="_blank" rel="noopener noreferrer">
-                                  <Award className="w-4 h-4 mr-2" />
-                                  {t.social.viewCertificate}
-                                  <ExternalLink className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
-                                </a>
-                              </Button>
-                            )}
+                            <div className="flex flex-wrap gap-3">
+                              {project.institution_link && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-slate-700 hover:text-slate-900 hover:bg-slate-100 font-semibold group/btn pl-0"
+                                  asChild
+                                >
+                                  <a href={project.institution_link} target="_blank" rel="noopener noreferrer">
+                                    {t.social.visitInstitution}
+                                    <ExternalLink className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
+                                  </a>
+                                </Button>
+                              )}
+
+                              {project.certificate_url && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-red-700 hover:text-red-800 hover:bg-red-50 font-semibold group/btn pl-0"
+                                  asChild
+                                >
+                                  <a href={project.certificate_url} target="_blank" rel="noopener noreferrer">
+                                    <Award className="w-4 h-4 mr-2" />
+                                    {t.social.viewCertificate}
+                                    <ExternalLink className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
+                                  </a>
+                                </Button>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </Card>
             )}
@@ -202,6 +216,7 @@ export function SocialSection() {
 
           <Separator orientation="vertical" className="hidden lg:block absolute left-1/2 top-32 bottom-8 -translate-x-1/2 w-px bg-gradient-to-b from-transparent via-slate-300 to-transparent" />
 
+          {/* Outro projeto */}
           <div className="animate-in fade-in slide-in-from-right" style={{ animationDelay: "200ms" }}>
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-red-600 to-red-700 flex items-center justify-center">
@@ -228,25 +243,23 @@ export function SocialSection() {
                     <Lock className="w-3 h-3 mr-1" />
                     {t.social.inDevelopment}
                   </Badge>
-                  
 
                   <h4 className="text-2xl md:text-3xl font-bold text-slate-900 group-hover:text-red-700 mb-4 leading-tight transition-colors text-center">
-                    {otherProject.title}
+                    {getTranslated(otherProject, 'title', language)}
                   </h4>
 
-                  {otherProject._description && (
+                  {getTranslated(otherProject, '_description', language) && (
                     <p className="text-slate-700 leading-relaxed mb-6 text-base text-center">
-                      {otherProject._description}
+                      {getTranslated(otherProject, '_description', language)}
                     </p>
                   )}
 
-                  {/* Book Image */}
                   {otherProject.instituition_logo && (
                     <div className="flex justify-center mb-8">
                       <div className="relative w-48 h-64 rounded-lg overflow-hidden shadow-2xl group-hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)] transition-shadow duration-500">
-                        <img 
-                          src={otherProject.instituition_logo} 
-                          alt={otherProject.title}
+                        <img
+                          src={otherProject.instituition_logo}
+                          alt={getTranslated(otherProject, 'title', language)}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />

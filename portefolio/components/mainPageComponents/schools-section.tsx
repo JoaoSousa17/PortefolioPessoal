@@ -7,8 +7,15 @@ import { GraduationCap, ExternalLink, Loader2, BookOpen, Lightbulb } from "lucid
 import { supabase, type School } from "@/lib/supabase"
 import { useTranslation } from "@/lib/hooks/useTranslation"
 
+function getTranslated(item: any, field: string, lang: string): string {
+  return item.translations?.[lang]?.[field]
+      || item.translations?.['en']?.[field]
+      || item[field]
+      || ''
+}
+
 export function SchoolsSection() {
-  const { t } = useTranslation()
+  const { t, language } = useTranslation()
 
   const [schools, setSchools] = useState<School[]>([])
   const [loading, setLoading] = useState(true)
@@ -102,6 +109,10 @@ export function SchoolsSection() {
                 const isExpanded = expandedSchools.has(school.id)
                 const isEven = index % 2 === 0
 
+                const name        = getTranslated(school, 'name', language)
+                const description = getTranslated(school, 'description', language)
+                const learnings   = getTranslated(school, 'learnings', language)
+
                 return (
                   <div
                     key={school.id}
@@ -121,12 +132,13 @@ export function SchoolsSection() {
                         }`}
                         onClick={() => toggleSchool(school.id)}
                       >
+                        {/* Card Header */}
                         <div className="flex items-center gap-4 sm:gap-6 p-4 sm:p-6 bg-gradient-to-br from-slate-50 to-white border-b-2 border-slate-100">
                           <div className="flex-shrink-0 w-14 h-14 sm:w-20 sm:h-20 rounded-lg sm:rounded-xl bg-white shadow-md sm:shadow-lg border-2 border-slate-200 flex items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-500">
                             {school.logo_url ? (
                               <img
                                 src={school.logo_url}
-                                alt={school.name}
+                                alt={name}
                                 className="w-full h-full object-contain p-1 sm:p-2"
                               />
                             ) : (
@@ -136,7 +148,7 @@ export function SchoolsSection() {
 
                           <div className="flex-grow min-w-0">
                             <h3 className="text-lg sm:text-2xl font-bold text-slate-900 group-hover:text-red-700 transition-colors mb-1 line-clamp-2 sm:line-clamp-none">
-                              {school.name}
+                              {name}
                             </h3>
                             {school.website && (
                               <a
@@ -161,9 +173,10 @@ export function SchoolsSection() {
                           </div>
                         </div>
 
+                        {/* Expandable Content */}
                         <div className={`overflow-hidden transition-all duration-500 ${isExpanded ? "max-h-[1000px]" : "max-h-0"}`}>
                           <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-                            {school.description && (
+                            {description && (
                               <div className="space-y-2 sm:space-y-3">
                                 <div className="flex items-center gap-2">
                                   <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center">
@@ -174,12 +187,12 @@ export function SchoolsSection() {
                                   </h4>
                                 </div>
                                 <p className="text-sm sm:text-base text-slate-700 leading-relaxed pl-9 sm:pl-10 text-justify">
-                                  {school.description}
+                                  {description}
                                 </p>
                               </div>
                             )}
 
-                            {school.learnings && (
+                            {learnings && (
                               <div className="space-y-2 sm:space-y-3">
                                 <div className="flex items-center gap-2">
                                   <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-red-600 to-red-700 flex items-center justify-center">
@@ -190,17 +203,18 @@ export function SchoolsSection() {
                                   </h4>
                                 </div>
                                 <p className="text-sm sm:text-base text-slate-700 leading-relaxed pl-9 sm:pl-10 text-justify">
-                                  {school.learnings}
+                                  {learnings}
                                 </p>
                               </div>
                             )}
                           </div>
                         </div>
 
-                        {!isExpanded && school.description && (
+                        {/* Collapsed preview */}
+                        {!isExpanded && description && (
                           <div className="px-4 sm:px-6 pb-4 sm:pb-6">
                             <p className="text-slate-600 line-clamp-2 text-xs sm:text-sm">
-                              {school.description}
+                              {description}
                             </p>
                             <p className="text-red-700 font-semibold text-xs sm:text-sm mt-2 sm:mt-3 flex items-center gap-2">
                               {t.schools.tapToExpand}

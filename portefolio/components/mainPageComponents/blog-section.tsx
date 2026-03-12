@@ -2,26 +2,46 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { BookOpen, ArrowRight, Calendar, Tag, Loader2 } from "lucide-react"
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { BookOpen, ArrowRight, Calendar, Loader2 } from "lucide-react"
 import { supabase, type BlogPost } from "@/lib/supabase"
 import Link from "next/link"
 import { useTranslation } from "@/lib/hooks/useTranslation"
 
+function getTranslated(item: any, field: string, lang: string): string {
+  return item.translations?.[lang]?.[field]
+      || item.translations?.['en']?.[field]
+      || item[field]
+      || ''
+}
+
+type TagRecord = {
+  id: string
+  color: string
+  translations: Record<string, any>
+}
+
 type BlogPostWithTags = BlogPost & {
-  tags: string[]
+  tags: TagRecord[]
+}
+
+function getTagName(tag: TagRecord, lang: string): string {
+  return tag.translations?.[lang]?.name || tag.translations?.en?.name || ''
+}
+
+function getTextColor(hex: string): string {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return (r * 299 + g * 587 + b * 114) / 1000 > 155 ? '#1e293b' : '#ffffff'
 }
 
 export function BlogSection() {
-  const { t } = useTranslation()
-
+  const { t, language } = useTranslation()
   const [latestPost, setLatestPost] = useState<BlogPostWithTags | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading]       = useState(true)
 
-  useEffect(() => {
-    fetchLatestPost()
-  }, [])
+  useEffect(() => { fetchLatestPost() }, [])
 
   const fetchLatestPost = async () => {
     try {
@@ -31,22 +51,18 @@ export function BlogSection() {
         .eq("published", true)
         .order("published_at", { ascending: false })
         .limit(1)
-        .single()
+        .maybeSingle()
 
       if (postError) throw postError
 
       if (post) {
-        const { data: tags, error: tagsError } = await supabase
-          .from("blog_tags")
-          .select("tag")
-          .eq("post_id", post.id)
+        const { data: junctionData } = await supabase
+          .from('blog_post_tags')
+          .select('tag_id, tags(id, color, translations)')
+          .eq('post_id', post.id)
 
-        if (tagsError) throw tagsError
-
-        setLatestPost({
-          ...post,
-          tags: tags?.map(t => t.tag) || [],
-        })
+        const tags: TagRecord[] = (junctionData || []).map((j: any) => j.tags).filter(Boolean)
+        setLatestPost({ ...post, tags })
       }
     } catch (error) {
       console.error("Error fetching latest post:", error)
@@ -57,11 +73,8 @@ export function BlogSection() {
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return null
-    const date = new Date(dateString)
-    return date.toLocaleDateString("pt-PT", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
+    return new Date(dateString).toLocaleDateString("pt-PT", {
+      day: "numeric", month: "long", year: "numeric",
     })
   }
 
@@ -83,87 +96,79 @@ export function BlogSection() {
         <div className="absolute w-[500px] h-[500px] -top-32 -right-32 bg-red-700/10 rounded-full blur-3xl" />
         <div className="absolute w-[400px] h-[400px] -bottom-24 -left-24 bg-slate-800/10 rounded-full blur-3xl" />
       </div>
-
       <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-white via-gray-100 to-white" />
 
       <div className="relative container mx-auto px-6">
+        {/* Header */}
         <div className="flex items-center gap-4 mb-12 animate-in fade-in slide-in-from-bottom">
           <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-red-700 to-red-800 flex items-center justify-center shadow-xl">
             <BookOpen className="w-7 h-7 text-white" />
           </div>
           <div>
-            <h2 className="text-4xl md:text-5xl font-bold text-white drop-shadow-lg">
-              {t.blog.title}
-            </h2>
-            <p className="text-white/90 text-lg mt-2 text-justify">
-              {t.blog.subtitle}
-            </p>
+            <h2 className="text-4xl md:text-5xl font-bold text-white drop-shadow-lg">{t.blog.title}</h2>
+            <p className="text-white/90 text-lg mt-2 text-justify">{t.blog.subtitle}</p>
           </div>
         </div>
 
         {!latestPost ? (
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-12 text-center border border-white/20 mb-12">
             <BookOpen className="w-16 h-16 text-white/50 mx-auto mb-4" />
-            <p className="text-white/90 text-xl">
-              {t.blog.empty}
-            </p>
+            <p className="text-white/90 text-xl">{t.blog.empty}</p>
           </div>
         ) : (
           <Card className="group bg-white border-0 shadow-2xl hover:shadow-[0_20px_60px_rgba(0,0,0,0.3)] transition-all duration-500 overflow-hidden mb-12 animate-in fade-in slide-in-from-bottom">
-            <Badge className="absolute top-2 right-6 bg-gradient-to-r from-red-600 to-red-700 text-white border-0 shadow-lg text-sm px-4 py-1.5 z-10">
-              {t.blog.latest}
-            </Badge>
+            {/* Latest badge */}
+            <div className="absolute top-4 right-6 z-10">
+              <span className="bg-gradient-to-r from-red-600 to-red-700 text-white text-sm font-bold px-4 py-1.5 rounded-full shadow-lg">
+                {t.blog.latest}
+              </span>
+            </div>
 
             <div className="md:flex">
               <div className="flex-grow p-8 md:p-10">
                 <CardHeader className="p-0 mb-6">
+
+                  {/* Tags */}
+                  {latestPost.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {latestPost.tags.map(tag => (
+                        <span
+                          key={tag.id}
+                          className="px-2.5 py-1 rounded-full text-xs font-bold"
+                          style={{
+                            backgroundColor: tag.color,
+                            color: getTextColor(tag.color),
+                          }}
+                        >
+                          {getTagName(tag, language)}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
                   <CardTitle className="text-3xl md:text-4xl font-bold text-slate-900 group-hover:text-red-700 transition-colors leading-tight mb-4 text-justify">
-                    {latestPost.title}
+                    {getTranslated(latestPost, 'title', language)}
                   </CardTitle>
 
-                  <div className="flex flex-wrap items-center gap-4 mb-4">
-                    {latestPost.published_at && (
-                      <div className="flex items-center gap-2 text-slate-600">
-                        <Calendar className="w-4 h-4" />
-                        <span className="text-sm font-medium">
-                          {formatDate(latestPost.published_at)}
-                        </span>
-                      </div>
-                    )}
+                  {latestPost.published_at && (
+                    <div className="flex items-center gap-2 text-slate-500 mb-4">
+                      <Calendar className="w-4 h-4" />
+                      <span className="text-sm font-medium">{formatDate(latestPost.published_at)}</span>
+                    </div>
+                  )}
 
-                    {latestPost.tags.length > 0 && (
-                      <div className="flex items-center gap-2">
-                        <Tag className="w-4 h-4 text-slate-600" />
-                        <div className="flex flex-wrap gap-2">
-                          {latestPost.tags.map((tag, index) => (
-                            <Badge
-                              key={index}
-                              variant="outline"
-                              className="bg-slate-100 text-slate-700 border-slate-300 font-medium"
-                            >
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {latestPost.excerpt && (
+                  {getTranslated(latestPost, 'excerpt', language) && (
                     <CardDescription className="text-lg text-slate-600 leading-relaxed text-justify">
-                      {latestPost.excerpt}
+                      {getTranslated(latestPost, 'excerpt', language)}
                     </CardDescription>
                   )}
                 </CardHeader>
 
                 <Button
                   asChild
-                  className="bg-gradient-to-r from-red-700 to-red-800 text-white font-semibold transition-all duration-300 ease-out hover:brightness-110 hover:saturate-110 hover:ring-2 hover:ring-red-500/40"
+                  className="bg-gradient-to-r from-red-700 to-red-800 text-white font-semibold transition-all duration-300 ease-out hover:brightness-110 hover:ring-2 hover:ring-red-500/40"
                 >
-                  <Link
-                    href={`/blog/${latestPost.slug}`}
-                    className="flex items-center justify-center"
-                  >
+                  <Link href={`/blog/${latestPost.slug}`} className="flex items-center justify-center">
                     {t.blog.readMore}
                     <ArrowRight className="ml-2 w-4 h-4 opacity-80" />
                   </Link>
