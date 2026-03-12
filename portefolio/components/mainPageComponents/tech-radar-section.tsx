@@ -14,8 +14,15 @@ import { Radar, ExternalLink, Loader2, Telescope } from "lucide-react"
 import { supabase, type TechRadar } from "@/lib/supabase"
 import { useTranslation } from "@/lib/hooks/useTranslation"
 
+function getTranslated(item: any, field: string, lang: string): string {
+  return item.translations?.[lang]?.[field]
+      || item.translations?.['en']?.[field]
+      || item[field]
+      || ''
+}
+
 export function TechRadarSection() {
-  const { t } = useTranslation()
+  const { t, language } = useTranslation()
 
   const [techItems, setTechItems] = useState<TechRadar[]>([])
   const [loading, setLoading] = useState(true)
@@ -44,20 +51,11 @@ export function TechRadarSection() {
   const getCategoryBadge = (category: string | null) => {
     switch (category) {
       case 'learn':
-        return {
-          label: t.techRadar.categories.learn,
-          color: 'bg-amber-100 text-amber-800 border-amber-300'
-        }
+        return { label: t.techRadar.categories.learn, color: 'bg-amber-100 text-amber-800 border-amber-300' }
       case 'using':
-        return {
-          label: t.techRadar.categories.using,
-          color: 'bg-emerald-100 text-emerald-800 border-emerald-300'
-        }
+        return { label: t.techRadar.categories.using, color: 'bg-emerald-100 text-emerald-800 border-emerald-300' }
       case 'explore':
-        return {
-          label: t.techRadar.categories.explore,
-          color: 'bg-red-100 text-red-800 border-red-300'
-        }
+        return { label: t.techRadar.categories.explore, color: 'bg-red-100 text-red-800 border-red-300' }
       default:
         return null
     }
@@ -77,7 +75,7 @@ export function TechRadarSection() {
 
   return (
     <section className="relative w-full bg-[#E8E2E1] py-16 md:py-24 overflow-hidden">
-      
+
       {/* Decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute w-[500px] h-[500px] -top-32 -right-32 bg-slate-800/5 rounded-full blur-3xl" />
@@ -88,7 +86,7 @@ export function TechRadarSection() {
       <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-white via-gray-100 to-white" />
 
       <div className="relative container mx-auto px-6">
-        
+
         {/* Header */}
         <div className="flex items-center gap-4 mb-12 animate-in fade-in slide-in-from-bottom">
           <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center shadow-xl">
@@ -116,6 +114,8 @@ export function TechRadarSection() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {techItems.map((item, index) => {
               const badge = getCategoryBadge(item.category)
+              const name  = getTranslated(item, '_name', language)
+              const notes = getTranslated(item, 'notes', language)
 
               return (
                 <Card
@@ -128,7 +128,7 @@ export function TechRadarSection() {
                       <>
                         <img
                           src={item.image_url}
-                          alt={item._name}
+                          alt={name}
                           className="w-full h-full object-contain p-4 group-hover:scale-110 transition-transform duration-500"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -148,11 +148,11 @@ export function TechRadarSection() {
 
                   <CardHeader className="pb-3 flex-grow">
                     <CardTitle className="text-xl font-bold text-slate-900 group-hover:text-red-700 transition-colors leading-tight">
-                      {item._name}
+                      {name}
                     </CardTitle>
-                    {item.notes && (
+                    {notes && (
                       <CardDescription className="text-sm text-slate-600 leading-relaxed line-clamp-2 mt-2 text-justify">
-                        {item.notes}
+                        {notes}
                       </CardDescription>
                     )}
                   </CardHeader>

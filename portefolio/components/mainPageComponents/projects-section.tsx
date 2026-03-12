@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Card,
-  CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
@@ -16,8 +15,15 @@ import { supabase, type Project } from "@/lib/supabase"
 import { useTranslation } from "@/lib/hooks/useTranslation"
 import Link from "next/link"
 
+function getTranslated(item: any, field: string, lang: string): string {
+  return item.translations?.[lang]?.[field]
+      || item.translations?.['en']?.[field]
+      || item[field]
+      || ''
+}
+
 export function ProjectsSection() {
-  const { t } = useTranslation()
+  const { t, language } = useTranslation()
 
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
@@ -58,17 +64,14 @@ export function ProjectsSection() {
 
   return (
     <section className="relative w-full bg-[#A99290] py-16 md:py-24 overflow-hidden">
-      {/* Decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute w-[500px] h-[500px] -top-32 -right-32 bg-red-700/10 rounded-full blur-3xl" />
         <div className="absolute w-[400px] h-[400px] -bottom-24 -left-24 bg-slate-800/10 rounded-full blur-3xl" />
       </div>
 
-      {/* Bottom separator */}
       <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-white via-gray-100 to-white" />
 
       <div className="relative container mx-auto px-6">
-        {/* Header */}
         <div className="flex items-center gap-4 mb-12 animate-in fade-in slide-in-from-bottom">
           <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-red-700 to-red-800 flex items-center justify-center shadow-xl">
             <Rocket className="w-7 h-7 text-white" />
@@ -83,7 +86,6 @@ export function ProjectsSection() {
           </div>
         </div>
 
-        {/* Projects Grid */}
         {projects.length === 0 ? (
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-12 text-center border border-white/20">
             <Rocket className="w-16 h-16 text-white/50 mx-auto mb-4" />
@@ -93,86 +95,85 @@ export function ProjectsSection() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {projects.map((project, index) => (
-              <Card
-                key={project.id}
-                className="group bg-white border-0 shadow-2xl hover:shadow-[0_20px_60px_rgba(0,0,0,0.3)] transition-all duration-500 hover:-translate-y-3 overflow-hidden animate-in fade-in slide-in-from-bottom flex flex-col"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                {/* Thumbnail */}
-                <div className="relative h-52 overflow-hidden bg-gradient-to-br from-slate-200 via-slate-100 to-white">
-                  {project.thumbnail_url ? (
-                    <>
-                      <img
-                        src={project.thumbnail_url}
-                        alt={project.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                    </>
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-100 to-red-50">
-                      <Rocket className="w-20 h-20 text-red-300" />
-                    </div>
-                  )}
+            {projects.map((project, index) => {
+              const title       = getTranslated(project, 'title', language)
+              const description = getTranslated(project, 'description', language)
 
-                  {project.featured && (
-                    <Badge className="absolute top-4 right-4 bg-gradient-to-r from-red-600 to-red-700 text-white border-0 shadow-lg text-sm px-3 py-1">
-                      {t.projects.featuredBadge}
-                    </Badge>
-                  )}
-                </div>
-
-                <div className="flex-grow flex flex-col">
-                  <CardHeader className="space-y-3 pb-4">
-                    <CardTitle className="text-2xl font-bold text-slate-900 group-hover:text-red-700 transition-colors leading-tight">
-                      {project.title}
-                    </CardTitle>
-                    {project.description && (
-                      <CardDescription className="text-base text-slate-600 leading-relaxed line-clamp-3 text-justify">
-                        {project.description}
-                      </CardDescription>
+              return (
+                <Card
+                  key={project.id}
+                  className="group bg-white border-0 shadow-2xl hover:shadow-[0_20px_60px_rgba(0,0,0,0.3)] transition-all duration-500 hover:-translate-y-3 overflow-hidden animate-in fade-in slide-in-from-bottom flex flex-col"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <div className="relative h-52 overflow-hidden bg-gradient-to-br from-slate-200 via-slate-100 to-white">
+                    {project.thumbnail_url ? (
+                      <>
+                        <img
+                          src={project.thumbnail_url}
+                          alt={title}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                      </>
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-100 to-red-50">
+                        <Rocket className="w-20 h-20 text-red-300" />
+                      </div>
                     )}
-                  </CardHeader>
-                </div>
 
-                <CardFooter className="flex gap-3 pt-4 mt-auto border-t border-slate-100">
-                  <Button
-                    asChild
-                    className="flex-1 font-semibold text-white bg-gradient-to-r from-red-700 to-red-800 transition-all duration-300 hover:brightness-110"
-                  >
-                    <Link
-                      href={`/projects/${project.id}`}
-                      className="flex items-center justify-center gap-2"
-                    >
-                      <span>{t.projects.viewProject}</span>
-                      <ExternalLink className="w-4 h-4 opacity-80" />
-                    </Link>
-                  </Button>
+                    {project.featured && (
+                      <Badge className="absolute top-4 right-4 bg-gradient-to-r from-red-600 to-red-700 text-white border-0 shadow-lg text-sm px-3 py-1">
+                        {t.projects.featuredBadge}
+                      </Badge>
+                    )}
+                  </div>
 
-                  {project.github_url && (
+                  <div className="flex-grow flex flex-col">
+                    <CardHeader className="space-y-3 pb-4">
+                      <CardTitle className="text-2xl font-bold text-slate-900 group-hover:text-red-700 transition-colors leading-tight">
+                        {title}
+                      </CardTitle>
+                      {description && (
+                        <CardDescription className="text-base text-slate-600 leading-relaxed line-clamp-3 text-justify">
+                          {description}
+                        </CardDescription>
+                      )}
+                    </CardHeader>
+                  </div>
+
+                  <CardFooter className="flex gap-3 pt-4 mt-auto border-t border-slate-100">
                     <Button
-                      variant="outline"
-                      size="icon"
-                      className="border-2 border-slate-300 hover:border-slate-900 hover:bg-slate-900 hover:text-white transition-all duration-300 w-11 h-11"
                       asChild
+                      className="flex-1 font-semibold text-white bg-gradient-to-r from-red-700 to-red-800 transition-all duration-300 hover:brightness-110"
                     >
-                      <a
-                        href={project.github_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <Link
+                        href={`/projects/${project.id}`}
+                        className="flex items-center justify-center gap-2"
                       >
-                        <Github className="w-5 h-5" />
-                      </a>
+                        <span>{t.projects.viewProject}</span>
+                        <ExternalLink className="w-4 h-4 opacity-80" />
+                      </Link>
                     </Button>
-                  )}
-                </CardFooter>
-              </Card>
-            ))}
+
+                    {project.github_url && (
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="border-2 border-slate-300 hover:border-slate-900 hover:bg-slate-900 hover:text-white transition-all duration-300 w-11 h-11"
+                        asChild
+                      >
+                        <a href={project.github_url} target="_blank" rel="noopener noreferrer">
+                          <Github className="w-5 h-5" />
+                        </a>
+                      </Button>
+                    )}
+                  </CardFooter>
+                </Card>
+              )
+            })}
           </div>
         )}
 
-        {/* View All */}
         <div className="flex justify-center animate-in fade-in slide-in-from-bottom">
           <Button
             size="lg"

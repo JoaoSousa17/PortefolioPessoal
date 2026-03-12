@@ -26,7 +26,8 @@ import {
   Upload,
   BookOpen,
   Code2,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Languages
 } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { uploadCV, uploadWebsiteImage } from "@/lib/storage-helpers"
@@ -34,12 +35,27 @@ import { TopBar } from "@/components/ui/top-bar"
 import { Footer } from "@/components/ui/footer"
 import Link from "next/link"
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+/**
+ * Translatable fields that live inside the `translations` JSONB column.
+ * Structure: { "en": { headline: "...", ... }, "pt": { headline: "...", ... } }
+ * "en" is the base language (index 0 / default). "pt" is the Portuguese translation.
+ */
+type TranslationEntry = {
+  headline?: string
+  bio_short?: string
+  bio_long?: string
+  about_who_am_i?: string
+  about_developer?: string
+  website1_name?: string
+  website2_name?: string
+  website3_name?: string
+}
+
 type ProfileData = {
   id?: string
   name: string | null
-  headline: string | null
-  bio_short: string | null
-  bio_long: string | null
   photo_url: string | null
   email: string | null
   linkedin_url: string | null
@@ -48,17 +64,28 @@ type ProfileData = {
   facebook_url: string | null
   whatsapp_url: string | null
   website1_url: string | null
-  website1_name: string | null
   website1_image: string | null
   website2_url: string | null
-  website2_name: string | null
   website2_image: string | null
   website3_url: string | null
-  website3_name: string | null
   website3_image: string | null
-  about_who_am_i: string | null
-  about_developer: string | null
+  /** JSONB column. Base language "en" is always index 0. */
+  translations: Record<string, TranslationEntry> | null
 }
+
+// Locales — "en" is the base/default, always written first
+const LOCALES = [
+  { code: "en", label: "English",   flag: "🇬🇧" },
+  { code: "pt", label: "Português", flag: "🇵🇹" },
+]
+
+const TRANSLATABLE_FIELDS: (keyof TranslationEntry)[] = [
+  "headline", "bio_short", "bio_long",
+  "about_who_am_i", "about_developer",
+  "website1_name", "website2_name", "website3_name",
+]
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function ProfileManagement() {
   const router = useRouter()
@@ -74,11 +101,12 @@ export default function ProfileManagement() {
   const [website3ImageFile, setWebsite3ImageFile] = useState<File | null>(null)
   const [successMessage, setSuccessMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
+
+  // Active locale for editing — default to "en" (base language)
+  const [activeLocale, setActiveLocale] = useState<string>("en")
+
   const [profileData, setProfileData] = useState<ProfileData>({
     name: '',
-    headline: '',
-    bio_short: '',
-    bio_long: '',
     photo_url: '',
     email: '',
     linkedin_url: '',
@@ -87,17 +115,40 @@ export default function ProfileManagement() {
     facebook_url: '',
     whatsapp_url: '',
     website1_url: '',
-    website1_name: '',
     website1_image: '',
     website2_url: '',
-    website2_name: '',
     website2_image: '',
     website3_url: '',
-    website3_name: '',
     website3_image: '',
-    about_who_am_i: '',
-    about_developer: ''
+    translations: { en: {}, pt: {} },
   })
+
+  // ─── Translation helpers ─────────────────────────────────────────────────
+
+  /** Read a translatable field for the active locale */
+  const getT = (field: keyof TranslationEntry): string =>
+    profileData.translations?.[activeLocale]?.[field] ?? ""
+
+  /** Write a translatable field for the active locale */
+  const setT = (field: keyof TranslationEntry, value: string) =>
+    setProfileData(prev => ({
+      ...prev,
+      translations: {
+        ...prev.translations,
+        [activeLocale]: {
+          ...(prev.translations?.[activeLocale] ?? {}),
+          [field]: value,
+        },
+      },
+    }))
+
+  /** How many translatable fields are filled for a given locale */
+  const fillCount = (lc: string): number => {
+    const t = profileData.translations?.[lc] ?? {}
+    return TRANSLATABLE_FIELDS.filter(f => t[f]?.trim()).length
+  }
+
+  // ─── Lifecycle ───────────────────────────────────────────────────────────
 
   useEffect(() => {
     const isAuthenticated = localStorage.getItem('admin_authenticated')
@@ -110,7 +161,6 @@ export default function ProfileManagement() {
   }, [router])
 
   const loadCurrentAboutContent = () => {
-    // Default content from AboutSection component
     const defaultWhoAmI = `Hi, my name is João, and I am a startup enthusiast, studying Computer Science at FEUP and passionate about gym, tech, and business. Since I was a kid, I always said that my dream was to become an entrepreneur even though I didn't know which area I would want to work in or the obstacles I would have to face on this enriching journey.<br></br><br></br>
 
 Everything started for me with my participation in the European Innovation Academy. It was definitely a pivotal gateway into the entrepreneurial environment. Shortly after, together with other program participants, we founded UPSTART, a student community, with the mission of sowing entrepreneurship in the academic ecosystem, proving to students the existence of more than one possible path.<br></br><br></br>
@@ -121,12 +171,20 @@ Where does the phrase with which I start this summary come from? From a young ag
 
     const defaultDeveloper = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.`
 
-    // Set defaults if fields are empty
-    setProfileData(prev => ({
-      ...prev,
-      about_who_am_i: prev.about_who_am_i || defaultWhoAmI,
-      about_developer: prev.about_developer || defaultDeveloper
-    }))
+    setProfileData(prev => {
+      const enTranslations = prev.translations?.en ?? {}
+      return {
+        ...prev,
+        translations: {
+          ...prev.translations,
+          en: {
+            ...enTranslations,
+            about_who_am_i: enTranslations.about_who_am_i || defaultWhoAmI,
+            about_developer: enTranslations.about_developer || defaultDeveloper,
+          },
+        },
+      }
+    })
   }
 
   const fetchProfile = async () => {
@@ -142,7 +200,11 @@ Where does the phrase with which I start this summary come from? From a young ag
       }
 
       if (data) {
-        setProfileData(data)
+        // Ensure both locale keys always exist
+        const translations = data.translations ?? {}
+        if (!translations.en) translations.en = {}
+        if (!translations.pt) translations.pt = {}
+        setProfileData({ ...data, translations })
       }
     } catch (error) {
       console.error('Error fetching profile:', error)
@@ -152,12 +214,15 @@ Where does the phrase with which I start this summary come from? From a young ag
     }
   }
 
+  // Non-translatable fields (URLs, email, name, photo)
   const handleInputChange = (field: keyof ProfileData, value: string) => {
     setProfileData(prev => ({
       ...prev,
-      [field]: value || null
+      [field]: value || null,
     }))
   }
+
+  // ─── File upload handlers (unchanged from original) ──────────────────────
 
   const handleCVUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -259,6 +324,8 @@ Where does the phrase with which I start this summary come from? From a young ag
     }
   }
 
+  // ─── Save ────────────────────────────────────────────────────────────────
+
   const handleSave = async () => {
     try {
       setSaving(true)
@@ -275,7 +342,6 @@ Where does the phrase with which I start this summary come from? From a young ag
           return
         }
         // URL do CV não precisa ser guardado na BD, é sempre o mesmo caminho
-        // Mas podes guardar se quiseres: profileData.cv_url = url
       }
 
       // Upload website images if selected
@@ -321,13 +387,11 @@ Where does the phrase with which I start this summary come from? From a young ag
       let result
 
       if (existingProfile) {
-        // Update existing profile
         result = await supabase
           .from('profile')
           .update(profileData)
           .eq('id', existingProfile.id)
       } else {
-        // Insert new profile
         result = await supabase
           .from('profile')
           .insert([profileData])
@@ -336,16 +400,14 @@ Where does the phrase with which I start this summary come from? From a young ag
       if (result.error) throw result.error
 
       setSuccessMessage('Perfil guardado com sucesso!')
-      
-      // Reset file states
+
       setCvFile(null)
       setWebsite1ImageFile(null)
       setWebsite2ImageFile(null)
       setWebsite3ImageFile(null)
-      
+
       setTimeout(() => setSuccessMessage(''), 3000)
-      
-      // Refresh data
+
       fetchProfile()
     } catch (error) {
       console.error('Error saving profile:', error)
@@ -355,6 +417,8 @@ Where does the phrase with which I start this summary come from? From a young ag
       setSaving(false)
     }
   }
+
+  // ─── Render ──────────────────────────────────────────────────────────────
 
   if (loading) {
     return (
@@ -433,7 +497,54 @@ Where does the phrase with which I start this summary come from? From a young ag
             )}
 
             <div className="space-y-6">
-              
+
+              {/* ── Language Selector ── */}
+              <Card className="border-0 shadow-lg rounded-2xl overflow-hidden">
+                <div className="h-1.5 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Languages className="w-5 h-5 text-blue-600" />
+                    <span className="font-bold text-slate-800 text-lg">Idioma de edição</span>
+                    <span className="text-sm text-slate-500">— os campos de texto são guardados por idioma</span>
+                  </div>
+                  <div className="flex gap-3 flex-wrap">
+                    {LOCALES.map(l => {
+                      const count = fillCount(l.code)
+                      const isActive = activeLocale === l.code
+                      return (
+                        <button
+                          key={l.code}
+                          onClick={() => setActiveLocale(l.code)}
+                          className={`flex items-center gap-2.5 px-5 py-3 rounded-xl border-2 font-semibold transition-all ${
+                            isActive
+                              ? "bg-blue-600 text-white border-blue-600 shadow-lg scale-105"
+                              : "bg-white text-slate-700 border-slate-200 hover:border-blue-400 hover:shadow"
+                          }`}
+                        >
+                          <span className="text-xl">{l.flag}</span>
+                          <span>{l.label}</span>
+                          <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${
+                            isActive
+                              ? "bg-white/25 text-white"
+                              : count > 0
+                              ? "bg-emerald-100 text-emerald-700"
+                              : "bg-slate-100 text-slate-400"
+                          }`}>
+                            {count}/{TRANSLATABLE_FIELDS.length}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                  {activeLocale !== "en" && (
+                    <p className="mt-3 text-sm text-slate-500">
+                      A editar tradução em <strong>{LOCALES.find(l => l.code === activeLocale)?.label}</strong>.
+                      Campos vazios vão mostrar o conteúdo em Inglês como fallback.
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+
               {/* Basic Information */}
               <Card className="border-0 shadow-xl overflow-hidden rounded-2xl">
                 <div className="h-2 bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600" />
@@ -454,9 +565,11 @@ Where does the phrase with which I start this summary come from? From a young ag
                 </CardHeader>
                 <CardContent className="p-8 bg-white space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Name — not translatable */}
                     <div className="space-y-3">
                       <Label htmlFor="name" className="text-slate-900 font-semibold text-base">
                         Nome Completo
+                        <span className="ml-2 text-xs text-slate-400 font-normal">(global)</span>
                       </Label>
                       <Input
                         id="name"
@@ -467,51 +580,61 @@ Where does the phrase with which I start this summary come from? From a young ag
                       />
                     </div>
 
+                    {/* Headline — translatable */}
                     <div className="space-y-3">
-                      <Label htmlFor="headline" className="text-slate-900 font-semibold text-base">
+                      <Label htmlFor="headline" className="text-slate-900 font-semibold text-base flex items-center gap-2">
                         Headline
+                        <LocaleBadge locale={activeLocale} />
                       </Label>
                       <Input
                         id="headline"
-                        value={profileData.headline || ''}
-                        onChange={(e) => handleInputChange('headline', e.target.value)}
+                        value={getT("headline")}
+                        onChange={(e) => setT("headline", e.target.value)}
                         placeholder="Developer • Entrepreneur"
                         className="h-12 border-2 border-slate-300 focus:border-blue-600 rounded-lg"
                       />
+                      <FallbackHint locale={activeLocale} baseValue={profileData.translations?.en?.headline} />
                     </div>
                   </div>
 
+                  {/* Bio Short — translatable */}
                   <div className="space-y-3">
-                    <Label htmlFor="bio_short" className="text-slate-900 font-semibold text-base">
+                    <Label htmlFor="bio_short" className="text-slate-900 font-semibold text-base flex items-center gap-2">
                       Biografia Curta
+                      <LocaleBadge locale={activeLocale} />
                     </Label>
                     <Textarea
                       id="bio_short"
-                      value={profileData.bio_short || ''}
-                      onChange={(e) => handleInputChange('bio_short', e.target.value)}
+                      value={getT("bio_short")}
+                      onChange={(e) => setT("bio_short", e.target.value)}
                       placeholder="Uma breve descrição sobre ti..."
                       rows={3}
                       className="border-2 border-slate-300 focus:border-blue-600 rounded-lg resize-none"
                     />
+                    <FallbackHint locale={activeLocale} baseValue={profileData.translations?.en?.bio_short} />
                   </div>
 
+                  {/* Bio Long — translatable */}
                   <div className="space-y-3">
-                    <Label htmlFor="bio_long" className="text-slate-900 font-semibold text-base">
+                    <Label htmlFor="bio_long" className="text-slate-900 font-semibold text-base flex items-center gap-2">
                       Biografia Longa
+                      <LocaleBadge locale={activeLocale} />
                     </Label>
                     <Textarea
                       id="bio_long"
-                      value={profileData.bio_long || ''}
-                      onChange={(e) => handleInputChange('bio_long', e.target.value)}
+                      value={getT("bio_long")}
+                      onChange={(e) => setT("bio_long", e.target.value)}
                       placeholder="Uma descrição mais detalhada sobre o teu percurso..."
                       rows={6}
                       className="border-2 border-slate-300 focus:border-blue-600 rounded-lg resize-none"
                     />
                   </div>
 
+                  {/* Photo URL — not translatable */}
                   <div className="space-y-3">
                     <Label htmlFor="photo_url" className="text-slate-900 font-semibold text-base">
                       URL da Foto de Perfil
+                      <span className="ml-2 text-xs text-slate-400 font-normal">(global)</span>
                     </Label>
                     <Input
                       id="photo_url"
@@ -543,15 +666,17 @@ Where does the phrase with which I start this summary come from? From a young ag
                   </div>
                 </CardHeader>
                 <CardContent className="p-8 bg-white space-y-6">
+                  {/* Who am I — translatable */}
                   <div className="space-y-3">
                     <Label htmlFor="about_who_am_i" className="text-slate-900 font-semibold text-base flex items-center gap-2">
                       <User className="w-4 h-4 text-slate-600" />
                       Who am I?
+                      <LocaleBadge locale={activeLocale} />
                     </Label>
                     <Textarea
                       id="about_who_am_i"
-                      value={profileData.about_who_am_i || ''}
-                      onChange={(e) => handleInputChange('about_who_am_i', e.target.value)}
+                      value={getT("about_who_am_i")}
+                      onChange={(e) => setT("about_who_am_i", e.target.value)}
                       placeholder="Hi, my name is João..."
                       rows={12}
                       className="border-2 border-slate-300 focus:border-slate-600 rounded-lg resize-none font-mono text-sm"
@@ -559,15 +684,17 @@ Where does the phrase with which I start this summary come from? From a young ag
                     <p className="text-xs text-slate-500">Suporta HTML. Usa &lt;br&gt;&lt;/br&gt; para quebras de linha.</p>
                   </div>
 
+                  {/* What defines me — translatable */}
                   <div className="space-y-3">
                     <Label htmlFor="about_developer" className="text-slate-900 font-semibold text-base flex items-center gap-2">
                       <Code2 className="w-4 h-4 text-red-600" />
                       What defines me as a developer?
+                      <LocaleBadge locale={activeLocale} />
                     </Label>
                     <Textarea
                       id="about_developer"
-                      value={profileData.about_developer || ''}
-                      onChange={(e) => handleInputChange('about_developer', e.target.value)}
+                      value={getT("about_developer")}
+                      onChange={(e) => setT("about_developer", e.target.value)}
                       placeholder="Lorem ipsum dolor sit amet..."
                       rows={8}
                       className="border-2 border-slate-300 focus:border-red-600 rounded-lg resize-none font-mono text-sm"
@@ -783,21 +910,26 @@ Where does the phrase with which I start this summary come from? From a young ag
                   <div className="space-y-4 p-6 bg-purple-50 rounded-xl border-2 border-purple-200">
                     <h4 className="font-bold text-purple-900 text-lg mb-4">Website 1</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Name — translatable */}
                       <div className="space-y-3">
-                        <Label htmlFor="website1_name" className="text-slate-900 font-semibold text-sm">
+                        <Label htmlFor="website1_name" className="text-slate-900 font-semibold text-sm flex items-center gap-2">
                           Nome
+                          <LocaleBadge locale={activeLocale} />
                         </Label>
                         <Input
                           id="website1_name"
-                          value={profileData.website1_name || ''}
-                          onChange={(e) => handleInputChange('website1_name', e.target.value)}
+                          value={getT("website1_name")}
+                          onChange={(e) => setT("website1_name", e.target.value)}
                           placeholder="Meu Portfolio"
                           className="h-11 border-2 border-slate-300 focus:border-orange-600 rounded-lg"
                         />
+                        <FallbackHint locale={activeLocale} baseValue={profileData.translations?.en?.website1_name} />
                       </div>
+                      {/* URL — not translatable */}
                       <div className="space-y-3">
                         <Label htmlFor="website1_url" className="text-slate-900 font-semibold text-sm">
                           URL
+                          <span className="ml-2 text-xs text-slate-400 font-normal">(global)</span>
                         </Label>
                         <Input
                           id="website1_url"
@@ -811,6 +943,7 @@ Where does the phrase with which I start this summary come from? From a young ag
                     <div className="space-y-3">
                       <Label htmlFor="website1_image" className="text-slate-900 font-semibold text-sm">
                         Imagem de Fundo
+                        <span className="ml-2 text-xs text-slate-400 font-normal">(global)</span>
                       </Label>
                       <Input
                         id="website1_image"
@@ -837,20 +970,23 @@ Where does the phrase with which I start this summary come from? From a young ag
                     <h4 className="font-bold text-blue-900 text-lg mb-4">Website 2</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-3">
-                        <Label htmlFor="website2_name" className="text-slate-900 font-semibold text-sm">
+                        <Label htmlFor="website2_name" className="text-slate-900 font-semibold text-sm flex items-center gap-2">
                           Nome
+                          <LocaleBadge locale={activeLocale} />
                         </Label>
                         <Input
                           id="website2_name"
-                          value={profileData.website2_name || ''}
-                          onChange={(e) => handleInputChange('website2_name', e.target.value)}
+                          value={getT("website2_name")}
+                          onChange={(e) => setT("website2_name", e.target.value)}
                           placeholder="Blog Pessoal"
                           className="h-11 border-2 border-slate-300 focus:border-orange-600 rounded-lg"
                         />
+                        <FallbackHint locale={activeLocale} baseValue={profileData.translations?.en?.website2_name} />
                       </div>
                       <div className="space-y-3">
                         <Label htmlFor="website2_url" className="text-slate-900 font-semibold text-sm">
                           URL
+                          <span className="ml-2 text-xs text-slate-400 font-normal">(global)</span>
                         </Label>
                         <Input
                           id="website2_url"
@@ -864,6 +1000,7 @@ Where does the phrase with which I start this summary come from? From a young ag
                     <div className="space-y-3">
                       <Label htmlFor="website2_image" className="text-slate-900 font-semibold text-sm">
                         Imagem de Fundo
+                        <span className="ml-2 text-xs text-slate-400 font-normal">(global)</span>
                       </Label>
                       <Input
                         id="website2_image"
@@ -890,20 +1027,23 @@ Where does the phrase with which I start this summary come from? From a young ag
                     <h4 className="font-bold text-red-900 text-lg mb-4">Website 3</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-3">
-                        <Label htmlFor="website3_name" className="text-slate-900 font-semibold text-sm">
+                        <Label htmlFor="website3_name" className="text-slate-900 font-semibold text-sm flex items-center gap-2">
                           Nome
+                          <LocaleBadge locale={activeLocale} />
                         </Label>
                         <Input
                           id="website3_name"
-                          value={profileData.website3_name || ''}
-                          onChange={(e) => handleInputChange('website3_name', e.target.value)}
+                          value={getT("website3_name")}
+                          onChange={(e) => setT("website3_name", e.target.value)}
                           placeholder="Loja Online"
                           className="h-11 border-2 border-slate-300 focus:border-orange-600 rounded-lg"
                         />
+                        <FallbackHint locale={activeLocale} baseValue={profileData.translations?.en?.website3_name} />
                       </div>
                       <div className="space-y-3">
                         <Label htmlFor="website3_url" className="text-slate-900 font-semibold text-sm">
                           URL
+                          <span className="ml-2 text-xs text-slate-400 font-normal">(global)</span>
                         </Label>
                         <Input
                           id="website3_url"
@@ -917,6 +1057,7 @@ Where does the phrase with which I start this summary come from? From a young ag
                     <div className="space-y-3">
                       <Label htmlFor="website3_image" className="text-slate-900 font-semibold text-sm">
                         Imagem de Fundo
+                        <span className="ml-2 text-xs text-slate-400 font-normal">(global)</span>
                       </Label>
                       <Input
                         id="website3_image"
@@ -976,5 +1117,25 @@ Where does the phrase with which I start this summary come from? From a young ag
 
       <Footer />
     </div>
+  )
+}
+
+// ─── Helper sub-components ────────────────────────────────────────────────────
+
+/** Small badge showing current locale on translatable fields */
+function LocaleBadge({ locale }: { locale: string }) {
+  if (locale === "en") {
+    return <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-normal">EN base</span>
+  }
+  return <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-normal">PT tradução</span>
+}
+
+/** Shows the EN base content as a hint when editing a translation */
+function FallbackHint({ locale, baseValue }: { locale: string; baseValue?: string }) {
+  if (locale === "en" || !baseValue) return null
+  return (
+    <p className="text-xs text-slate-400 truncate">
+      🇬🇧 Base: <span className="italic">{baseValue}</span>
+    </p>
   )
 }

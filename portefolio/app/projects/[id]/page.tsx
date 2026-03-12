@@ -10,6 +10,7 @@ import { ArrowLeft, ExternalLink, Github, Calendar, Loader2, Tag } from "lucide-
 import { supabase, type Project } from "@/lib/supabase"
 import { TopBar } from "@/components/ui/top-bar"
 import { Footer } from "@/components/ui/footer"
+import { MarkdownContent } from "@/components/ui/markdown-content"
 import Link from "next/link"
 import { useTranslation } from "@/lib/hooks/useTranslation"
 
@@ -86,13 +87,9 @@ export default function ProjectDetailPage() {
         <TopBar />
         <div className="flex-grow flex items-center justify-center p-6">
           <Card className="max-w-md w-full p-8 text-center">
-            <p className="text-xl text-slate-700 mb-4">
-              {t.projectDetail.notFound}
-            </p>
+            <p className="text-xl text-slate-700 mb-4">{t.projectDetail.notFound}</p>
             <Button asChild>
-              <Link href="/projects">
-                {t.projectDetail.backToProjects}
-              </Link>
+              <Link href="/projects">{t.projectDetail.backToProjects}</Link>
             </Button>
           </Card>
         </div>
@@ -141,9 +138,7 @@ export default function ProjectDetailPage() {
                   {project.created_at && (
                     <div className="flex items-center gap-1.5 sm:gap-2 bg-white/10 backdrop-blur-sm rounded-lg px-3 py-1.5 sm:px-4 sm:py-2 border border-white/20">
                       <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                      <span className="text-xs sm:text-sm">
-                        {formatDate(project.created_at)}
-                      </span>
+                      <span className="text-xs sm:text-sm">{formatDate(project.created_at)}</span>
                     </div>
                   )}
                   {project.featured && (
@@ -198,6 +193,7 @@ export default function ProjectDetailPage() {
           <div className="container mx-auto px-4 sm:px-6">
             <div className="max-w-4xl mx-auto">
 
+              {/* Tech tags */}
               {project.tags.length > 0 && (
                 <Card className="bg-white border-0 shadow-lg sm:shadow-xl p-5 sm:p-8 mb-6 sm:mb-8">
                   <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
@@ -220,15 +216,14 @@ export default function ProjectDetailPage() {
                 </Card>
               )}
 
+              {/* Long description — Markdown */}
               {project.long_description && (
                 <Card className="bg-white border-0 shadow-lg sm:shadow-xl p-5 sm:p-8 md:p-12">
                   <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-4 sm:mb-6">
                     {t.projectDetail.about}
                   </h2>
-                  <Separator className="mb-4 sm:mb-6" />
-                  <p className="text-base sm:text-lg text-slate-700 leading-relaxed whitespace-pre-line text-justify">
-                    {project.long_description}
-                  </p>
+                  <Separator className="mb-6 sm:mb-8" />
+                  <MarkdownContent content={project.long_description} variant="blog" />
                 </Card>
               )}
 
@@ -248,7 +243,6 @@ export default function ProjectDetailPage() {
                   </Link>
                 </Button>
               </div>
-
             </div>
           </div>
         </section>

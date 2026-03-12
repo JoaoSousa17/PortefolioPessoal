@@ -8,6 +8,7 @@ import { ArrowLeft, Award, ExternalLink, Calendar, Loader2, GraduationCap } from
 import { supabase, type Course } from "@/lib/supabase"
 import { TopBar } from "@/components/ui/top-bar"
 import { Footer } from "@/components/ui/footer"
+import { MarkdownContent } from "@/components/ui/markdown-content"
 import Link from "next/link"
 import { useTranslation } from "@/lib/hooks/useTranslation"
 
@@ -45,20 +46,11 @@ export default function CoursesPage() {
   const getImportanceBadge = (importance: string | null) => {
     switch (importance) {
       case "high":
-        return {
-          label: t.coursesPage.importance.high,
-          color: "bg-red-100 text-red-800 border-red-300"
-        }
+        return { label: t.coursesPage.importance.high, color: "bg-red-100 text-red-800 border-red-300" }
       case "medium":
-        return {
-          label: t.coursesPage.importance.medium,
-          color: "bg-amber-100 text-amber-800 border-amber-300"
-        }
+        return { label: t.coursesPage.importance.medium, color: "bg-amber-100 text-amber-800 border-amber-300" }
       case "low":
-        return {
-          label: t.coursesPage.importance.low,
-          color: "bg-slate-100 text-slate-800 border-slate-300"
-        }
+        return { label: t.coursesPage.importance.low, color: "bg-slate-100 text-slate-800 border-slate-300" }
       default:
         return null
     }
@@ -77,7 +69,6 @@ export default function CoursesPage() {
           </div>
 
           <div className="relative container mx-auto px-4 sm:px-6">
-            {/* Back Button */}
             <Button
               variant="ghost"
               className="text-white hover:bg-white/10 mb-6 sm:mb-8 group text-sm sm:text-base"
@@ -89,7 +80,6 @@ export default function CoursesPage() {
               </Link>
             </Button>
 
-            {/* Header */}
             <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
               <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg sm:rounded-xl bg-gradient-to-br from-red-600 to-red-700 flex items-center justify-center shadow-xl">
                 <Award className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
@@ -104,29 +94,18 @@ export default function CoursesPage() {
               </div>
             </div>
 
-            {/* Stats */}
             <div className="flex flex-wrap gap-3 sm:gap-6 mt-6 sm:mt-8">
               <div className="bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl px-4 py-2 sm:px-6 sm:py-3 border border-white/20">
                 <p className="text-2xl sm:text-3xl font-bold">{courses.length}</p>
-                <p className="text-xs sm:text-sm text-white/80">
-                  {t.coursesPage.stats.total}
-                </p>
+                <p className="text-xs sm:text-sm text-white/80">{t.coursesPage.stats.total}</p>
               </div>
               <div className="bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl px-4 py-2 sm:px-6 sm:py-3 border border-white/20">
-                <p className="text-2xl sm:text-3xl font-bold">
-                  {courses.filter(c => c.featured).length}
-                </p>
-                <p className="text-xs sm:text-sm text-white/80">
-                  {t.coursesPage.stats.featured}
-                </p>
+                <p className="text-2xl sm:text-3xl font-bold">{courses.filter(c => c.featured).length}</p>
+                <p className="text-xs sm:text-sm text-white/80">{t.coursesPage.stats.featured}</p>
               </div>
               <div className="bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl px-4 py-2 sm:px-6 sm:py-3 border border-white/20">
-                <p className="text-2xl sm:text-3xl font-bold">
-                  {courses.filter(c => c.importance === "high").length}
-                </p>
-                <p className="text-xs sm:text-sm text-white/80">
-                  {t.coursesPage.stats.highImportance}
-                </p>
+                <p className="text-2xl sm:text-3xl font-bold">{courses.filter(c => c.importance === "high").length}</p>
+                <p className="text-xs sm:text-sm text-white/80">{t.coursesPage.stats.highImportance}</p>
               </div>
             </div>
           </div>
@@ -142,9 +121,7 @@ export default function CoursesPage() {
             ) : courses.length === 0 ? (
               <div className="bg-white rounded-2xl p-12 text-center border-2 border-slate-300">
                 <Award className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-                <p className="text-slate-700 text-xl">
-                  {t.coursesPage.empty}
-                </p>
+                <p className="text-slate-700 text-xl">{t.coursesPage.empty}</p>
               </div>
             ) : (
               <Card className="bg-white border-0 shadow-lg sm:shadow-2xl overflow-hidden max-w-5xl mx-auto">
@@ -161,6 +138,7 @@ export default function CoursesPage() {
                         <div className="absolute left-0 top-0 bottom-0 w-0.5 sm:w-1 bg-gradient-to-b from-red-700 to-red-800 scale-y-0 group-hover:scale-y-100 transition-transform duration-300 origin-top" />
                         
                         <div className="flex gap-4 sm:gap-6">
+                          {/* Logo */}
                           <div className="flex-shrink-0">
                             <div className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-lg sm:rounded-xl bg-slate-100 border-2 border-slate-200 flex items-center justify-center overflow-hidden shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300">
                               {course.college_logo ? (
@@ -192,7 +170,6 @@ export default function CoursesPage() {
                                     {t.coursesPage.featured}
                                   </Badge>
                                 )}
-
                                 {importanceBadge && (
                                   <Badge
                                     variant="outline"
@@ -201,7 +178,6 @@ export default function CoursesPage() {
                                     {importanceBadge.label}
                                   </Badge>
                                 )}
-
                                 {course.completion_date && (
                                   <div className="flex items-center gap-1.5 sm:gap-2 text-slate-600">
                                     <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -213,10 +189,13 @@ export default function CoursesPage() {
                               </div>
                             </div>
 
+                            {/* Description — Markdown (compact variant) */}
                             {course.description && (
-                              <p className="text-slate-600 leading-relaxed mb-3 sm:mb-4 text-sm sm:text-base text-justify">
-                                {course.description}
-                              </p>
+                              <MarkdownContent
+                                content={course.description}
+                                variant="compact"
+                                className="mb-3 sm:mb-4"
+                              />
                             )}
 
                             {course.certificate_url && (
@@ -226,11 +205,7 @@ export default function CoursesPage() {
                                 className="text-red-700 hover:text-red-800 hover:bg-red-50 font-semibold group/btn pl-0 h-8 sm:h-9 text-sm sm:text-base"
                                 asChild
                               >
-                                <a
-                                  href={course.certificate_url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                >
+                                <a href={course.certificate_url} target="_blank" rel="noopener noreferrer">
                                   <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                                   {t.coursesPage.viewCertificate}
                                   <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-1.5 sm:ml-2 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
