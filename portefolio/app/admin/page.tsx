@@ -29,8 +29,10 @@ import {
   Loader2,
   Globe,
   CheckCircle2,
+  LayoutGrid,
 } from "lucide-react"
 import { supabase } from "@/lib/supabase"
+import AnalyticsDashboard from "@/components/admin/AnalyticsDashboard"
 import { TopBar } from "@/components/ui/top-bar"
 import { Footer } from "@/components/ui/footer"
 import Link from "next/link"
@@ -495,12 +497,19 @@ export default function AdminDashboard() {
         <section className="py-16 md:py-20">
           <div className="container mx-auto px-6">
             <div className="mb-12 animate-in fade-in slide-in-from-bottom">
-              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">
-                Gestão de Conteúdos
-              </h2>
-              <p className="text-lg text-slate-600">
-                Selecione a secção que deseja gerir
-              </p>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-600 to-red-700 flex items-center justify-center shadow-lg shrink-0">
+                  <LayoutGrid className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-3xl font-bold text-slate-900 leading-tight">
+                    Gestão de Conteúdos
+                  </h2>
+                  <p className="text-slate-500 mt-0.5">
+                    Selecione a secção que deseja gerir
+                  </p>
+                </div>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -613,6 +622,14 @@ export default function AdminDashboard() {
                   </div>
                 </CardContent>
               </Card>
+            </div>
+
+            {/* Analytics */}
+            <div
+              className="mt-12 animate-in fade-in slide-in-from-bottom"
+              style={{ animationDelay: "250ms" }}
+            >
+              <AnalyticsDashboard />
             </div>
 
             <div
