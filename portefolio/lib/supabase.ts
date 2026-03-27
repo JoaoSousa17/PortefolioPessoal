@@ -159,3 +159,11 @@ export type Book = {
   show_on_main: boolean | null
   created_at: string
 }
+
+// ─── New: controls site-wide visibility ───────────────────────────────────────
+export type SiteStatus = {
+  id: string
+  under_construction: boolean
+  under_maintenance: boolean
+  updated_at: string
+}

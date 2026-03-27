@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import ReactMarkdown from "react-markdown"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { GraduationCap, ExternalLink, Loader2, BookOpen, Lightbulb } from "lucide-react"
@@ -186,9 +187,15 @@ export function SchoolsSection() {
                                     {t.schools.about}
                                   </h4>
                                 </div>
-                                <p className="text-sm sm:text-base text-slate-700 leading-relaxed pl-9 sm:pl-10 text-justify">
-                                  {description}
-                                </p>
+                                <div className="pl-9 sm:pl-10 prose prose-sm sm:prose-base prose-slate max-w-none text-justify
+                                  prose-p:text-slate-700 prose-p:leading-relaxed
+                                  prose-strong:text-slate-900
+                                  prose-ul:text-slate-700 prose-ol:text-slate-700
+                                  prose-li:marker:text-red-700
+                                  prose-headings:text-slate-900
+                                  prose-a:text-red-700 prose-a:no-underline hover:prose-a:underline">
+                                  <ReactMarkdown>{description}</ReactMarkdown>
+                                </div>
                               </div>
                             )}
 
@@ -202,9 +209,15 @@ export function SchoolsSection() {
                                     {t.schools.learnings}
                                   </h4>
                                 </div>
-                                <p className="text-sm sm:text-base text-slate-700 leading-relaxed pl-9 sm:pl-10 text-justify">
-                                  {learnings}
-                                </p>
+                                <div className="pl-9 sm:pl-10 prose prose-sm sm:prose-base prose-slate max-w-none text-justify
+                                  prose-p:text-slate-700 prose-p:leading-relaxed
+                                  prose-strong:text-slate-900
+                                  prose-ul:text-slate-700 prose-ol:text-slate-700
+                                  prose-li:marker:text-red-700
+                                  prose-headings:text-slate-900
+                                  prose-a:text-red-700 prose-a:no-underline hover:prose-a:underline">
+                                  <ReactMarkdown>{learnings}</ReactMarkdown>
+                                </div>
                               </div>
                             )}
                           </div>

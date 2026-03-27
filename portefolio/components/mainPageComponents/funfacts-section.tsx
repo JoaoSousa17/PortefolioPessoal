@@ -26,7 +26,7 @@ export function FunFactsSection() {
       { type: "system", content: t.funfacts.terminal.subtitle },
       { type: "system", content: "" }
     ])
-  }, [t]) // <-- depende de `t`, assim atualiza quando a tradução muda
+  }, [t])
 
   useEffect(() => {
     if (terminalEndRef.current) {
@@ -87,18 +87,36 @@ export function FunFactsSection() {
     let output: TerminalLine[]
 
     if (cmd === "help") {
+      // Only hints, no command names
+      output = [
+        { type: "output", content: t.funfacts.help.title },
+        { type: "output", content: "" },
+        ...Object.values(commands).map(
+          (value): TerminalLine => ({
+            type: "output",
+            content: `  › ${value.hint}`
+          })
+        ),
+        { type: "output", content: "" },
+        { type: "output", content: t.funfacts.help.clear },
+        { type: "output", content: t.funfacts.help.help },
+        { type: "output", content: t.funfacts.help.helpWithAnswers }
+      ]
+    } else if (cmd === "help_w_answers") {
+      // [command] - hint format
       output = [
         { type: "output", content: t.funfacts.help.title },
         { type: "output", content: "" },
         ...Object.entries(commands).map(
           ([key, value]): TerminalLine => ({
             type: "output",
-            content: `  ${key.padEnd(12)} - ${value.hint}`
+            content: `  › [${key}] - ${value.hint}`
           })
         ),
         { type: "output", content: "" },
         { type: "output", content: t.funfacts.help.clear },
-        { type: "output", content: t.funfacts.help.help }
+        { type: "output", content: t.funfacts.help.help },
+        { type: "output", content: t.funfacts.help.helpWithAnswers }
       ]
     } else if (cmd === "secret_auth") {
       window.location.href = "/auth"

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { User, Code2, Loader2 } from "lucide-react"
 import { supabase, type Profile } from "@/lib/supabase"
 import { useTranslation } from "@/lib/hooks/useTranslation"
+import { MarkdownContent } from "@/components/ui/markdown-content"
 
 function getTranslated(item: any, field: string, lang: string): string {
   return item.translations?.[lang]?.[field]
@@ -74,9 +75,7 @@ export function AboutSection() {
               </div>
               
               <div className="bg-white rounded-2xl p-8 md:p-10 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-slate-200">
-                <p className="text-lg md:text-xl text-slate-700 leading-relaxed hyphens-auto text-justify whitespace-pre-line">
-                  {whoAmI}
-                </p>
+                <MarkdownContent content={whoAmI} />
               </div>
             </div>
           )}
@@ -94,9 +93,7 @@ export function AboutSection() {
               </div>
               
               <div className="bg-white rounded-2xl p-8 md:p-10 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-slate-200">
-                <p className="text-lg md:text-xl text-slate-700 leading-relaxed hyphens-auto text-justify whitespace-pre-line">
-                  {developer}
-                </p>
+                <MarkdownContent content={developer} />
               </div>
             </div>
           )}

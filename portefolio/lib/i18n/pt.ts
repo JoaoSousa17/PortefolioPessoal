@@ -168,11 +168,12 @@ Acima de tudo, sou um developer em constante evolução, motivado por aprender n
     },
 
     languages: {
-      title: "Línguas",
+      title: "Idiomas",
       subtitle: "Idiomas que domino e estou a aprender",
-      empty: "Nenhuma língua registada no momento."
+      empty: "Nenhum idioma registado de momento."
     },
 
+    // pt — bloco funfacts (substitui o existente)
     funfacts: {
       title: "Mini-Game Fun Facts",
       subtitle: "Descobre curiosidades de forma interativa",
@@ -188,8 +189,9 @@ Acima de tudo, sou um developer em constante evolução, motivado por aprender n
 
       help: {
         title: "Comandos disponíveis:",
-        clear: "  clear        - Limpar o terminal",
-        help: "  help         - Mostrar esta ajuda"
+        clear: "  clear              - Limpar o terminal",
+        help:  "  help               - Mostrar comandos com hints apenas",
+        helpWithAnswers: "  help_w_answers     - Mostrar comandos com hints e respostas"
       },
 
       footer: {

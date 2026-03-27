@@ -165,6 +165,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor i
       empty: "No languages registered at the moment."
     },
 
+    // en — bloco funfacts (substitui o existente)
     funfacts: {
       title: "Mini-Game Fun Facts",
       subtitle: "Discover curiosities in an interactive way",
@@ -180,8 +181,9 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor i
 
       help: {
         title: "Available commands:",
-        clear: "  clear        - Clear the terminal",
-        help: "  help         - Show this help"
+        clear: "  clear              - Clear the terminal",
+        help:  "  help               - Show commands with hints only",
+        helpWithAnswers: "  help_w_answers     - Show commands with hints and answers"
       },
 
       footer: {
