@@ -8,16 +8,21 @@ type Language = "pt" | "en"
 interface LanguageContextType {
   language: Language
   setLanguage: (lang: Language) => void
+  mounted: boolean
 }
 
 const LanguageContext = createContext<LanguageContextType | null>(null)
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<Language>("en")
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    const storedLang = localStorage.getItem("language") as Language
-    if (storedLang) setLanguageState(storedLang)
+    const stored = localStorage.getItem("language") as Language
+    if (stored === "pt" || stored === "en") {
+      setLanguageState(stored)
+    }
+    setMounted(true)
   }, [])
 
   const setLanguage = (lang: Language) => {
@@ -26,7 +31,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage }}>
+    <LanguageContext.Provider value={{ language, setLanguage, mounted }}>
       {children}
     </LanguageContext.Provider>
   )
@@ -34,8 +39,6 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
 export function useLanguage() {
   const context = useContext(LanguageContext)
-  if (!context) {
-    throw new Error("useLanguage must be used within LanguageProvider")
-  }
+  if (!context) throw new Error("useLanguage must be used within LanguageProvider")
   return context
 }

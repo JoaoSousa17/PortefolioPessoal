@@ -5,9 +5,14 @@ import { translations } from "../i18n"
 import { useLanguage } from "../context/LanguageContext"
 
 export function useTranslation() {
-  const { language } = useLanguage()
+  const { language, mounted } = useLanguage()
 
-  const t = translations[language]
+  // Before mount, always use "en" to match the server render.
+  // After mount, use the real language from localStorage.
+  // This prevents the SSR/client hydration mismatch.
+  const resolvedLanguage = mounted ? language : "en"
 
-  return { t, language }
+  const t = translations[resolvedLanguage]
+
+  return { t, language: resolvedLanguage }
 }

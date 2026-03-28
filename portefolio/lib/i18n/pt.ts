@@ -265,7 +265,6 @@ Acima de tudo, sou um developer em constante evolução, motivado por aprender n
       },
       bottom: {
         copyright: "© {year} João Sousa. Feito com",
-        andCoffee: "e muito café.",
         backToTop: "Voltar ao topo"
       }
     },
@@ -379,7 +378,12 @@ Acima de tudo, sou um developer em constante evolução, motivado por aprender n
       technologies: "Tecnologias",
       about: "Sobre o Projeto",
       cta: "Gostou deste projeto? Veja mais!",
-      viewAll: "Ver Todos os Projetos"
+      viewAll: "Ver Todos os Projetos",
+      relatedPosts: {
+        section: "Artigos Relacionados",
+        subtitle: "Publicações do blog relacionadas com este projeto",
+        readPost: "Ler Artigo"
+      }
     },
 
     auth: {

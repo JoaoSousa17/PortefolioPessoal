@@ -94,7 +94,7 @@ export function ProjectsSection() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+          <div className="flex flex-wrap justify-center gap-8 mb-12">
             {projects.map((project, index) => {
               const title       = getTranslated(project, 'title', language)
               const description = getTranslated(project, 'description', language)
@@ -102,7 +102,10 @@ export function ProjectsSection() {
               return (
                 <Card
                   key={project.id}
-                  className="group bg-white border-0 shadow-2xl hover:shadow-[0_20px_60px_rgba(0,0,0,0.3)] transition-all duration-500 hover:-translate-y-3 overflow-hidden animate-in fade-in slide-in-from-bottom flex flex-col"
+                  className="group bg-white border-0 shadow-2xl hover:shadow-[0_20px_60px_rgba(0,0,0,0.3)] transition-all duration-500 hover:-translate-y-3 overflow-hidden animate-in fade-in slide-in-from-bottom flex flex-col
+                    w-full
+                    md:w-[calc(50%-1rem)]
+                    lg:w-[calc(33.333%-1.375rem)]"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <div className="relative h-52 overflow-hidden bg-gradient-to-br from-slate-200 via-slate-100 to-white">

@@ -11,12 +11,13 @@ import { Badge } from "@/components/ui/badge"
 import {
   ArrowLeft, Loader2, Rocket, Plus, Edit, Trash2, ExternalLink,
   Github, CheckCircle2, AlertCircle, Image as ImageIcon, Star,
-  Archive, Upload, Languages
+  Archive, Languages, BookOpen
 } from "lucide-react"
 import { supabase, type Project } from "@/lib/supabase"
 import { TopBar } from "@/components/ui/top-bar"
 import { Footer } from "@/components/ui/footer"
 import { SkillsPicker } from "@/components/ui/skills-picker"
+import { BlogPostsPicker } from "@/components/ui/blog-posts-picker"
 import Link from "next/link"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -34,11 +35,13 @@ type NewProjectData = {
   status: 'active' | 'archived'
   featured: boolean
   skillIds: string[]
+  blogPostSlugs: string[]
   translations: Record<string, ProjectTranslation>
 }
 
 type ProjectWithSkills = Project & {
   skillIds: string[]
+  blogPostSlugs: string[]
 }
 
 const LOCALES = [
@@ -64,7 +67,7 @@ export default function ProjectsManagement() {
   const [activeLocale, setActiveLocale] = useState("en")
   const [newProject,   setNewProject]   = useState<NewProjectData>({
     thumbnail_url: '', main_url: '', github_url: '',
-    status: 'active', featured: false, skillIds: [],
+    status: 'active', featured: false, skillIds: [], blogPostSlugs: [],
     translations: { en: {}, pt: {} },
   })
 
@@ -112,16 +115,20 @@ export default function ProjectsManagement() {
         .order('created_at', { ascending: false })
       if (error) throw error
 
-      const projectsWithSkills = await Promise.all(
+      const projectsWithExtras = await Promise.all(
         (data || []).map(async (proj) => {
-          const { data: jd } = await supabase
-            .from('project_skills')
-            .select('skill_id')
-            .eq('project_id', proj.id)
-          return { ...proj, skillIds: (jd || []).map((j: any) => j.skill_id) }
+          const [{ data: skillData }, { data: blogData }] = await Promise.all([
+            supabase.from('project_skills').select('skill_id').eq('project_id', proj.id),
+            supabase.from('project_blog_posts').select('blog_post_slug').eq('project_id', proj.id),
+          ])
+          return {
+            ...proj,
+            skillIds:      (skillData || []).map((j: any) => j.skill_id),
+            blogPostSlugs: (blogData  || []).map((j: any) => j.blog_post_slug),
+          }
         })
       )
-      setProjects(projectsWithSkills)
+      setProjects(projectsWithExtras)
     } catch (error) {
       console.error(error)
       showError('Erro ao carregar projetos')
@@ -136,8 +143,7 @@ export default function ProjectsManagement() {
     try {
       setUploadingImage(true)
       const ts  = Date.now(), rnd = Math.random().toString(36).substring(2, 8), ext = file.name.split('.').pop()
-      const publicUrl = `/projects/project_${ts}_${rnd}.${ext}`
-      setNewProject(prev => ({ ...prev, thumbnail_url: publicUrl }))
+      setNewProject(prev => ({ ...prev, thumbnail_url: `/projects/project_${ts}_${rnd}.${ext}` }))
       showSuccess('Imagem carregada com sucesso!')
     } catch {
       showError('Erro ao fazer upload da imagem')
@@ -146,7 +152,7 @@ export default function ProjectsManagement() {
     }
   }
 
-  const handleInputChange = (field: keyof Omit<NewProjectData, 'translations' | 'skillIds'>, value: string | boolean) =>
+  const handleInputChange = (field: keyof Omit<NewProjectData, 'translations' | 'skillIds' | 'blogPostSlugs'>, value: string | boolean) =>
     setNewProject(prev => ({ ...prev, [field]: value }))
 
   // ─── Add project ─────────────────────────────────────────────────────────
@@ -160,32 +166,38 @@ export default function ProjectsManagement() {
       const { data: projectData, error } = await supabase
         .from('projects')
         .insert([{
-          title:         enTitle,
-          description:   newProject.translations?.en?.description?.trim() || null,
+          title:            enTitle,
+          description:      newProject.translations?.en?.description?.trim() || null,
           long_description: newProject.translations?.en?.long_description?.trim() || null,
-          thumbnail_url: newProject.thumbnail_url || null,
-          main_url:      newProject.main_url || null,
-          github_url:    newProject.github_url || null,
-          status:        newProject.status,
-          featured:      newProject.featured,
-          translations:  newProject.translations,
+          thumbnail_url:    newProject.thumbnail_url || null,
+          main_url:         newProject.main_url || null,
+          github_url:       newProject.github_url || null,
+          status:           newProject.status,
+          featured:         newProject.featured,
+          translations:     newProject.translations,
         }])
         .select().single()
 
       if (error) throw error
 
-      // Insert project_skills junction rows
+      // Skills
       if (newProject.skillIds.length > 0 && projectData) {
-        const { error: skillErr } = await supabase
-          .from('project_skills')
-          .insert(newProject.skillIds.map(sid => ({ project_id: projectData.id, skill_id: sid })))
-        if (skillErr) throw skillErr
+        await supabase.from('project_skills').insert(
+          newProject.skillIds.map(sid => ({ project_id: projectData.id, skill_id: sid }))
+        )
+      }
+
+      // Blog posts
+      if (newProject.blogPostSlugs.length > 0 && projectData) {
+        await supabase.from('project_blog_posts').insert(
+          newProject.blogPostSlugs.map(slug => ({ project_id: projectData.id, blog_post_slug: slug }))
+        )
       }
 
       showSuccess('Projeto adicionado com sucesso!')
       setNewProject({
         thumbnail_url: '', main_url: '', github_url: '',
-        status: 'active', featured: false, skillIds: [],
+        status: 'active', featured: false, skillIds: [], blogPostSlugs: [],
         translations: { en: {}, pt: {} },
       })
       setActiveLocale("en")
@@ -203,7 +215,6 @@ export default function ProjectsManagement() {
   const handleDeleteProject = async (id: string) => {
     if (!confirm('Tens a certeza que queres eliminar este projeto?')) return
     try {
-      // Junction rows cascade on delete (FK ON DELETE CASCADE)
       const { error } = await supabase.from('projects').delete().eq('id', id)
       if (error) throw error
       showSuccess('Projeto eliminado com sucesso!')
@@ -309,20 +320,15 @@ export default function ProjectsManagement() {
                           const count    = fillCount(l.code)
                           const isActive = activeLocale === l.code
                           return (
-                            <button
-                              key={l.code}
-                              onClick={() => setActiveLocale(l.code)}
+                            <button key={l.code} onClick={() => setActiveLocale(l.code)}
                               className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border-2 font-semibold text-xs transition-all flex-1 justify-center ${
                                 isActive ? 'bg-red-600 text-white border-red-600 shadow' : 'bg-white text-slate-700 border-slate-200 hover:border-red-400'
-                              }`}
-                            >
+                              }`}>
                               <span>{l.flag}</span>
                               <span>{l.label}</span>
                               <span className={`px-1.5 py-0.5 rounded-full font-bold ${
                                 isActive ? 'bg-white/25 text-white' : count > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400'
-                              }`}>
-                                {count}/{TRANSLATABLE_FIELDS.length}
-                              </span>
+                              }`}>{count}/{TRANSLATABLE_FIELDS.length}</span>
                             </button>
                           )
                         })}
@@ -408,6 +414,13 @@ export default function ProjectsManagement() {
                       label="Skills utilizadas"
                     />
 
+                    {/* Blog posts picker */}
+                    <BlogPostsPicker
+                      selectedSlugs={newProject.blogPostSlugs}
+                      onChange={slugs => setNewProject(prev => ({ ...prev, blogPostSlugs: slugs }))}
+                      label="Blog posts relacionados"
+                    />
+
                     {/* Featured / Archived */}
                     <div className="space-y-3 pt-2">
                       <div className="flex items-center gap-3">
@@ -470,6 +483,7 @@ export default function ProjectsManagement() {
                               <th className="px-6 py-4 text-left text-sm font-bold text-slate-900">Projeto</th>
                               <th className="px-6 py-4 text-left text-sm font-bold text-slate-900">Status</th>
                               <th className="px-6 py-4 text-left text-sm font-bold text-slate-900">Skills</th>
+                              <th className="px-6 py-4 text-left text-sm font-bold text-slate-900">Posts</th>
                               <th className="px-6 py-4 text-left text-sm font-bold text-slate-900">Links</th>
                               <th className="px-6 py-4 text-right text-sm font-bold text-slate-900">Ações</th>
                             </tr>
@@ -516,6 +530,16 @@ export default function ProjectsManagement() {
                                   {project.skillIds.length > 0 ? (
                                     <span className="text-xs text-slate-500 font-medium">
                                       {project.skillIds.length} skill{project.skillIds.length !== 1 ? 's' : ''}
+                                    </span>
+                                  ) : (
+                                    <span className="text-xs text-slate-300">—</span>
+                                  )}
+                                </td>
+                                <td className="px-6 py-4">
+                                  {project.blogPostSlugs.length > 0 ? (
+                                    <span className="flex items-center gap-1 text-xs text-rose-600 font-medium">
+                                      <BookOpen className="w-3 h-3" />
+                                      {project.blogPostSlugs.length}
                                     </span>
                                   ) : (
                                     <span className="text-xs text-slate-300">—</span>

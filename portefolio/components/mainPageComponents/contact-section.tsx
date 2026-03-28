@@ -64,15 +64,16 @@ export function ContactSection() {
     setSubmitStatus('idle')
 
     try {
-      const { error } = await supabase
-        .from('contact_messages')
-        .insert([formData])
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
 
-      if (error) throw error
+      if (!res.ok) throw new Error('Request failed')
 
       setSubmitStatus('success')
       setFormData({ name: '', contact: '', subject: '', message: '' })
-
       setTimeout(() => setSubmitStatus('idle'), 5000)
     } catch (error) {
       console.error('Error submitting form:', error)
