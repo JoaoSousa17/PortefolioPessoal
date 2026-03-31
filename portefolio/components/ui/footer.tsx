@@ -170,8 +170,7 @@ export function Footer() {
           <div className="text-center md:text-left">
             <p className="text-slate-400 text-sm flex items-center gap-2 justify-center md:justify-start">
               {t.footer.bottom.copyright.replace("{year}", currentYear.toString())}
-              <Heart className="w-4 h-4 text-red-600 fill-red-600 animate-pulse" />
-              {t.footer.bottom.andCoffee}
+              <Heart className="w-4 h-4 text-red-600 fill-red-600 animate-pulse"/>
             </p>
           </div>
 

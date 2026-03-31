@@ -167,3 +167,9 @@ export type SiteStatus = {
   under_maintenance: boolean
   updated_at: string
 }
+
+// ─── Project ↔ Blog Post relationship ────────────────────────────────────────
+export type ProjectBlogPost = {
+  project_id: string
+  blog_post_slug: string
+}

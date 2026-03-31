@@ -2,50 +2,38 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 
-const SKIP_STATUS_PREFIXES = [
-  "/maintance",
-  "/auth",
-  "/admin",
-  "/_next",
-  "/api",
-  "/favicon.ico",
-  "/images",
-  "/contact.vcf",
-]
-
-function skipStatusCheck(pathname: string): boolean {
-  return SKIP_STATUS_PREFIXES.some(
-    (p) => pathname === p || pathname.startsWith(p + "/")
-  )
-}
-
-const ADMIN_COOKIE = "admin_authenticated"
-
-function isAdminRoute(pathname: string): boolean {
-  return pathname === "/admin" || pathname.startsWith("/admin/")
-}
-
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // 1. Admin auth guard
-  if (isAdminRoute(pathname)) {
-    const authCookie = request.cookies.get(ADMIN_COOKIE)
-    if (!authCookie?.value) {
-      const loginUrl = request.nextUrl.clone()
-      loginUrl.pathname = "/auth"
-      loginUrl.search = ""
-      return NextResponse.redirect(loginUrl)
+
+  // Never intercept these paths
+  if (
+    pathname.startsWith("/maintance") ||
+    pathname.startsWith("/auth") ||
+    pathname.startsWith("/api") ||
+    pathname.startsWith("/_next") ||
+    pathname.includes("favicon")
+  ) {
+    return NextResponse.next()
+  }
+
+  // Check admin cookie — allow through everything if logged in
+  const isAdmin = request.cookies.get("admin_authenticated")?.value === "true"
+
+  // Admin route guard
+  if (pathname.startsWith("/admin")) {
+    if (!isAdmin) {
+      return NextResponse.redirect(new URL("/auth", request.url))
     }
     return NextResponse.next()
   }
 
-  // 2. Skip exempt paths
-  if (skipStatusCheck(pathname)) {
+  // Admin logged in → bypass maintenance/construction
+  if (isAdmin) {
     return NextResponse.next()
   }
 
-  // 3. Check site status
+  // Check site status for regular visitors
   try {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -58,36 +46,23 @@ export async function middleware(request: NextRequest) {
       .limit(1)
       .single()
 
-    if (data?.under_maintenance || data?.under_construction) {
-      const mode = data.under_maintenance ? "maintenance" : "construction"
-
-      const url = request.nextUrl.clone()
-      url.pathname = "/maintance"
-      url.search = ""
-
-      // Pass the mode via a request header — readable by the page via
-      // the /api/site-mode route (headers are server-only, not client-visible)
-      const response = NextResponse.rewrite(url)
-      response.headers.set("x-site-mode", mode)
-
-      // Also set a cookie so the client page can read it reliably
-      response.cookies.set("site-mode", mode, {
-        path: "/",
-        maxAge: 10,          // short-lived — only needed for this render
-        sameSite: "strict",
-        httpOnly: false,     // must be readable by client JS
-      })
-
-      return response
+    if (data?.under_maintenance) {
+      const url = new URL("/maintance", request.url)
+      const res = NextResponse.rewrite(url)
+      res.cookies.set("x-site-mode", "maintenance", { path: "/", maxAge: 60, httpOnly: false })
+      return res
     }
-  } catch (err) {
-    console.error("Middleware: failed to fetch site_status", err)
+
+    if (data?.under_construction) {
+      const url = new URL("/maintance", request.url)
+      const res = NextResponse.rewrite(url)
+      res.cookies.set("x-site-mode", "construction", { path: "/", maxAge: 60, httpOnly: false })
+      return res
+    }
+  } catch (e) {
   }
 
-  // Clear the mode cookie when site is online
-  const response = NextResponse.next()
-  response.cookies.delete("site-mode")
-  return response
+  return NextResponse.next()
 }
 
 export const config = {

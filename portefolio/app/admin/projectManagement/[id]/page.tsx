@@ -11,12 +11,13 @@ import { Badge } from "@/components/ui/badge"
 import { 
   ArrowLeft, Save, Loader2, Rocket, ExternalLink, Github,
   CheckCircle2, AlertCircle, Image as ImageIcon, Star, Archive,
-  Trash2, RefreshCw, Languages, Sparkles
+  Trash2, RefreshCw, Languages, Sparkles, BookOpen
 } from "lucide-react"
 import { supabase, type Project } from "@/lib/supabase"
 import { TopBar } from "@/components/ui/top-bar"
 import { Footer } from "@/components/ui/footer"
 import { SkillsPicker } from "@/components/ui/skills-picker"
+import { BlogPostsPicker } from "@/components/ui/blog-posts-picker"
 import Link from "next/link"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -34,6 +35,7 @@ type ProjectData = {
   status: 'active' | 'archived'
   featured: boolean
   skillIds: string[]
+  blogPostSlugs: string[]
   translations: Record<string, ProjectTranslation>
 }
 
@@ -62,7 +64,7 @@ export default function EditProject() {
 
   const [projectData, setProjectData] = useState<ProjectData>({
     thumbnail_url: null, main_url: null, github_url: null,
-    status: 'active', featured: false, skillIds: [],
+    status: 'active', featured: false, skillIds: [], blogPostSlugs: [],
     translations: { en: {}, pt: {} },
   })
   const [originalData, setOriginalData] = useState<ProjectData | null>(null)
@@ -105,7 +107,6 @@ export default function EditProject() {
     try {
       setLoading(true)
 
-      // Fetch project
       const { data, error } = await supabase
         .from('projects')
         .select('*')
@@ -115,13 +116,16 @@ export default function EditProject() {
       if (error) throw error
       if (!data) throw new Error('Projeto não encontrado')
 
-      // Fetch associated skills
       const { data: skillRows } = await supabase
         .from('project_skills')
         .select('skill_id')
         .eq('project_id', projectId)
 
-      // Build translations — seed EN from top-level columns if translations JSONB is empty/missing
+      const { data: blogPostRows } = await supabase
+        .from('project_blog_posts')
+        .select('blog_post_slug')
+        .eq('project_id', projectId)
+
       const translations: Record<string, any> = {
         en: {},
         pt: {},
@@ -130,23 +134,23 @@ export default function EditProject() {
       if (!translations.en) translations.en = {}
       if (!translations.pt) translations.pt = {}
 
-      // Seed EN fields from top-level columns as fallback (handles old data without translations)
       if (!translations.en.title            && data.title)            translations.en.title            = data.title
       if (!translations.en.description      && data.description)      translations.en.description      = data.description
       if (!translations.en.long_description && data.long_description) translations.en.long_description = data.long_description
 
       const formatted: ProjectData = {
-        thumbnail_url: data.thumbnail_url  ?? null,
-        main_url:      data.main_url       ?? null,
-        github_url:    data.github_url     ?? null,
-        status:        data.status         || 'active',
-        featured:      data.featured       ?? false,
-        skillIds:      (skillRows || []).map((r: any) => r.skill_id),
+        thumbnail_url:  data.thumbnail_url  ?? null,
+        main_url:       data.main_url       ?? null,
+        github_url:     data.github_url     ?? null,
+        status:         data.status         || 'active',
+        featured:       data.featured       ?? false,
+        skillIds:       (skillRows || []).map((r: any) => r.skill_id),
+        blogPostSlugs:  (blogPostRows || []).map((r: any) => r.blog_post_slug),
         translations,
       }
 
       setProjectData(formatted)
-      setOriginalData(JSON.parse(JSON.stringify(formatted))) // deep clone to avoid reference sharing
+      setOriginalData(JSON.parse(JSON.stringify(formatted)))
     } catch (err) {
       console.error('fetchProject error:', err)
       showError('Erro ao carregar projeto')
@@ -169,7 +173,7 @@ export default function EditProject() {
     }
   }
 
-  const handleInputChange = (field: keyof Omit<ProjectData, 'translations' | 'skillIds'>, value: string | boolean) =>
+  const handleInputChange = (field: keyof Omit<ProjectData, 'translations' | 'skillIds' | 'blogPostSlugs'>, value: string | boolean) =>
     setProjectData(prev => ({
       ...prev,
       [field]: field === 'featured' || field === 'status' ? value : (value || null),
@@ -200,7 +204,7 @@ export default function EditProject() {
         .eq('id', projectId)
       if (error) throw error
 
-      // Replace junction rows
+      // Skills
       await supabase.from('project_skills').delete().eq('project_id', projectId)
       if (projectData.skillIds.length > 0) {
         await supabase.from('project_skills').insert(
@@ -208,8 +212,16 @@ export default function EditProject() {
         )
       }
 
+      // Blog posts
+      await supabase.from('project_blog_posts').delete().eq('project_id', projectId)
+      if (projectData.blogPostSlugs.length > 0) {
+        await supabase.from('project_blog_posts').insert(
+          projectData.blogPostSlugs.map(slug => ({ project_id: projectId, blog_post_slug: slug }))
+        )
+      }
+
       showSuccess('Projeto atualizado com sucesso!')
-      setOriginalData(JSON.parse(JSON.stringify(projectData))) // deep clone
+      setOriginalData(JSON.parse(JSON.stringify(projectData)))
     } catch {
       showError('Erro ao atualizar projeto. Tenta novamente.')
     } finally {
@@ -288,6 +300,12 @@ export default function EditProject() {
                   <Badge className="text-sm px-4 py-2 bg-purple-500 text-white border-0">
                     <Sparkles className="w-4 h-4 mr-1" />
                     {projectData.skillIds.length} skill{projectData.skillIds.length !== 1 ? 's' : ''}
+                  </Badge>
+                )}
+                {projectData.blogPostSlugs.length > 0 && (
+                  <Badge className="text-sm px-4 py-2 bg-rose-500 text-white border-0">
+                    <BookOpen className="w-4 h-4 mr-1" />
+                    {projectData.blogPostSlugs.length} post{projectData.blogPostSlugs.length !== 1 ? 's' : ''}
                   </Badge>
                 )}
               </div>
@@ -464,6 +482,31 @@ export default function EditProject() {
                     onChange={ids => setProjectData(prev => ({ ...prev, skillIds: ids }))}
                     accentColor="red"
                     label="Skills utilizadas no projeto"
+                  />
+                </CardContent>
+              </Card>
+
+              {/* Blog Posts */}
+              <Card className="border-0 shadow-xl overflow-hidden rounded-2xl">
+                <div className="h-2 bg-gradient-to-r from-rose-600 via-rose-500 to-rose-600" />
+                <CardHeader className="bg-gradient-to-br from-rose-50 to-rose-100 pt-8 pb-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-rose-600 to-rose-700 flex items-center justify-center shadow-lg flex-shrink-0">
+                      <BookOpen className="w-7 h-7 text-white" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-3xl font-bold text-rose-900 mb-2">Blog Posts Relacionados</CardTitle>
+                      <CardDescription className="text-rose-700 text-base">
+                        Artigos do blog relacionados com este projeto
+                        <span className="ml-2 text-xs font-normal">(global)</span>
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-8 bg-white">
+                  <BlogPostsPicker
+                    selectedSlugs={projectData.blogPostSlugs}
+                    onChange={slugs => setProjectData(prev => ({ ...prev, blogPostSlugs: slugs }))}
                   />
                 </CardContent>
               </Card>

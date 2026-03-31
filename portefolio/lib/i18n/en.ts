@@ -257,7 +257,6 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor i
       },
       bottom: {
         copyright: "© {year} João Sousa. Made with",
-        andCoffee: "and lots of coffee.",
         backToTop: "Back to Top"
       }
     },
@@ -371,7 +370,12 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor i
       technologies: "Technologies",
       about: "About the Project",
       cta: "Liked this project? See more!",
-      viewAll: "View All Projects"
+      viewAll: "View All Projects",
+      relatedPosts: {
+        section: "Related Articles",
+        subtitle: "Blog posts related to this project",
+        readPost: "Read Article"
+      }
     },
 
     auth: {

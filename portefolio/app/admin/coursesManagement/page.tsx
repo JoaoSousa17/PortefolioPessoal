@@ -19,8 +19,6 @@ import { Footer } from "@/components/ui/footer"
 import { SkillsPicker } from "@/components/ui/skills-picker"
 import Link from "next/link"
 
-// ─── Locales ──────────────────────────────────────────────────────────────────
-
 const LOCALES = [
   { code: "en", label: "English",   flag: "🇬🇧" },
   { code: "pt", label: "Português", flag: "🇵🇹" },
@@ -28,8 +26,6 @@ const LOCALES = [
 
 const TRANSLATABLE_FIELDS = ["title", "description"] as const
 type TranslatableField = typeof TRANSLATABLE_FIELDS[number]
-
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 type CourseTranslation = {
   title?: string
@@ -74,8 +70,6 @@ type NewCourse = {
   translations: Record<string, CourseTranslation>
 }
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
 function LocaleBadge({ locale }: { locale: string }) {
   return locale === "en"
     ? <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-normal">EN base</span>
@@ -87,9 +81,7 @@ function FallbackHint({ locale, baseValue }: { locale: string; baseValue?: strin
   return <p className="text-xs text-slate-400 truncate">🇬🇧 Base: <span className="italic">{baseValue}</span></p>
 }
 
-function LocaleSelector({
-  active, onChange, fillCount,
-}: { active: string; onChange: (lc: string) => void; fillCount: (lc: string) => number }) {
+function LocaleSelector({ active, onChange, fillCount }: { active: string; onChange: (lc: string) => void; fillCount: (lc: string) => number }) {
   return (
     <div className="mb-6 p-4 bg-slate-50 border-2 border-slate-200 rounded-xl">
       <div className="flex items-center gap-2 mb-3">
@@ -99,15 +91,13 @@ function LocaleSelector({
       </div>
       <div className="flex gap-2">
         {LOCALES.map(l => {
-          const count    = fillCount(l.code)
-          const isActive = active === l.code
+          const count = fillCount(l.code), isActive = active === l.code
           return (
             <button key={l.code} onClick={() => onChange(l.code)}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border-2 font-semibold text-xs transition-all ${
                 isActive ? 'bg-orange-600 text-white border-orange-600 shadow' : 'bg-white text-slate-700 border-slate-200 hover:border-orange-400'
               }`}>
-              <span>{l.flag}</span>
-              <span>{l.label}</span>
+              <span>{l.flag}</span><span>{l.label}</span>
               <span className={`px-1.5 py-0.5 rounded-full font-bold ${
                 isActive ? 'bg-white/25 text-white' : count > 0 ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-400'
               }`}>{count}/{TRANSLATABLE_FIELDS.length}</span>
@@ -120,14 +110,11 @@ function LocaleSelector({
   )
 }
 
-function InlineLocaleSelector({
-  active, onChange, fillCount,
-}: { active: string; onChange: (lc: string) => void; fillCount: (lc: string) => number }) {
+function InlineLocaleSelector({ active, onChange, fillCount }: { active: string; onChange: (lc: string) => void; fillCount: (lc: string) => number }) {
   return (
     <div className="flex gap-1.5 mb-2">
       {LOCALES.map(l => {
-        const count    = fillCount(l.code)
-        const isActive = active === l.code
+        const count = fillCount(l.code), isActive = active === l.code
         return (
           <button key={l.code} onClick={() => onChange(l.code)}
             className={`flex items-center gap-1 px-2 py-1 rounded border font-semibold text-xs transition-all ${
@@ -144,34 +131,30 @@ function InlineLocaleSelector({
   )
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
-
 export default function CoursesManagement() {
   const router = useRouter()
-  const [loading,              setLoading]              = useState(true)
-  const [saving,               setSaving]               = useState(false)
-  const [uploadingLogo,        setUploadingLogo]        = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [uploadingLogo, setUploadingLogo] = useState(false)
   const [uploadingCertificate, setUploadingCertificate] = useState(false)
-  const [courses,              setCourses]              = useState<Course[]>([])
-  const [successMessage,       setSuccessMessage]       = useState('')
-  const [errorMessage,         setErrorMessage]         = useState('')
-  const [viewingCertificate,   setViewingCertificate]   = useState<string | null>(null)
+  const [courses, setCourses] = useState<Course[]>([])
+  const [successMessage, setSuccessMessage] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
+  const [viewingCertificate, setViewingCertificate] = useState<string | null>(null)
 
-  // Inline editing
-  const [editingId,              setEditingId]              = useState<string | null>(null)
-  const [editingData,            setEditingData]            = useState<EditingCourse | null>(null)
-  const [editingLogoFile,        setEditingLogoFile]        = useState<File | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editingData, setEditingData] = useState<EditingCourse | null>(null)
+  const [editingLogoFile, setEditingLogoFile] = useState<File | null>(null)
   const [editingCertificateFile, setEditingCertificateFile] = useState<File | null>(null)
-  const [editingLocale,          setEditingLocale]          = useState("en")
+  const [editingLocale, setEditingLocale] = useState("en")
 
-  // New course form
   const [activeLocale, setActiveLocale] = useState("en")
-  const [newCourse,    setNewCourse]    = useState<NewCourse>({
+  const [newCourse, setNewCourse] = useState<NewCourse>({
     college_name: '', importance: 'medium', certificate_url: '',
     college_logo: '', featured: false, completion_date: '',
     skillIds: [], translations: { en: {}, pt: {} },
   })
-  const [logoFile,        setLogoFile]        = useState<File | null>(null)
+  const [logoFile, setLogoFile] = useState<File | null>(null)
   const [certificateFile, setCertificateFile] = useState<File | null>(null)
 
   const importanceLevels = [
@@ -180,15 +163,11 @@ export default function CoursesManagement() {
     { value: 'low',    label: 'Baixa Relevância', color: 'bg-slate-100 text-slate-800 border-slate-300' },
   ]
 
-  // ─── Translation helpers — new course ────────────────────────────────────
-
   const getT = (f: TranslatableField): string => newCourse.translations?.[activeLocale]?.[f] ?? ""
   const setT = (f: TranslatableField, v: string) =>
     setNewCourse(p => ({ ...p, translations: { ...p.translations, [activeLocale]: { ...(p.translations?.[activeLocale] ?? {}), [f]: v } } }))
   const fillCount = (lc: string): number =>
     TRANSLATABLE_FIELDS.filter(f => newCourse.translations?.[lc]?.[f]?.trim()).length
-
-  // ─── Translation helpers — editing row ───────────────────────────────────
 
   const getEditT = (f: TranslatableField): string => editingData?.translations?.[editingLocale]?.[f] ?? ""
   const setEditT = (f: TranslatableField, v: string) => {
@@ -198,15 +177,11 @@ export default function CoursesManagement() {
   const editFillCount = (lc: string): number =>
     TRANSLATABLE_FIELDS.filter(f => editingData?.translations?.[lc]?.[f]?.trim()).length
 
-  // ─── Display helpers ──────────────────────────────────────────────────────
-
   const courseTitle = (c: Course) => c.translations?.en?.title || c.translations?.pt?.title || c.title || 'Sem título'
   const courseDesc  = (c: Course) => c.translations?.en?.description || c.translations?.pt?.description || c.description || ''
 
   const showSuccess = (msg: string) => { setSuccessMessage(msg); setTimeout(() => setSuccessMessage(''), 3000) }
   const showError   = (msg: string) => { setErrorMessage(msg);   setTimeout(() => setErrorMessage(''), 5000) }
-
-  // ─── Lifecycle ───────────────────────────────────────────────────────────
 
   useEffect(() => {
     if (!localStorage.getItem('admin_authenticated')) { router.push('/auth'); return }
@@ -219,11 +194,9 @@ export default function CoursesManagement() {
       const { data, error } = await supabase
         .from('courses').select('*').order('completion_date', { ascending: false, nullsFirst: false })
       if (error) throw error
-
       const coursesWithSkills = await Promise.all(
         (data || []).map(async (course) => {
-          const { data: jd } = await supabase
-            .from('course_skills').select('skill_id').eq('course_id', course.id)
+          const { data: jd } = await supabase.from('course_skills').select('skill_id').eq('course_id', course.id)
           return { ...course, skillIds: (jd || []).map((j: any) => j.skill_id) }
         })
       )
@@ -234,8 +207,6 @@ export default function CoursesManagement() {
       setLoading(false)
     }
   }
-
-  // ─── File upload helpers ──────────────────────────────────────────────────
 
   const buildLogoPath = (file: File) => {
     const ts = Date.now(), rnd = Math.random().toString(36).substring(2, 8), ext = file.name.split('.').pop()
@@ -268,38 +239,27 @@ export default function CoursesManagement() {
     setEditingCertificateFile(file); setEditingData({ ...editingData, certificate_url: buildCertPath(file) }); showSuccess('Certificado selecionado!')
   }
 
-  // ─── Save junction rows helper ────────────────────────────────────────────
-
   const saveSkills = async (courseId: string, skillIds: string[]) => {
     await supabase.from('course_skills').delete().eq('course_id', courseId)
-    if (skillIds.length > 0) {
+    if (skillIds.length > 0)
       await supabase.from('course_skills').insert(skillIds.map(sid => ({ course_id: courseId, skill_id: sid })))
-    }
   }
-
-  // ─── CRUD ─────────────────────────────────────────────────────────────────
 
   const handleAddCourse = async () => {
     const enTitle = newCourse.translations?.en?.title?.trim()
-    if (!enTitle)                    { showError('O título em Inglês é obrigatório'); return }
+    if (!enTitle) { showError('O título em Inglês é obrigatório'); return }
     if (!newCourse.college_name.trim()) { showError('O nome da instituição é obrigatório'); return }
     try {
       setSaving(true)
       const { data: courseData, error } = await supabase.from('courses').insert([{
-        title:           enTitle,
-        college_name:    newCourse.college_name,
-        description:     newCourse.translations?.en?.description?.trim() || null,
-        importance:      newCourse.importance,
-        certificate_url: newCourse.certificate_url || null,
-        college_logo:    newCourse.college_logo || null,
-        featured:        newCourse.featured,
-        completion_date: newCourse.completion_date || null,
-        translations:    newCourse.translations,
+        title: enTitle, college_name: newCourse.college_name,
+        description: newCourse.translations?.en?.description?.trim() || null,
+        importance: newCourse.importance, certificate_url: newCourse.certificate_url || null,
+        college_logo: newCourse.college_logo || null, featured: newCourse.featured,
+        completion_date: newCourse.completion_date || null, translations: newCourse.translations,
       }]).select().single()
       if (error) throw error
-
       if (courseData) await saveSkills(courseData.id, newCourse.skillIds)
-
       showSuccess('Curso adicionado com sucesso!')
       setNewCourse({ college_name: '', importance: 'medium', certificate_url: '', college_logo: '', featured: false, completion_date: '', skillIds: [], translations: { en: {}, pt: {} } })
       setLogoFile(null); setCertificateFile(null); setActiveLocale("en")
@@ -313,7 +273,7 @@ export default function CoursesManagement() {
 
   const startEditing = (course: Course) => {
     const translations: Record<string, CourseTranslation> = { en: {}, pt: {}, ...(course.translations ?? {}) }
-    if (!translations.en.title       && course.title)       translations.en.title       = course.title
+    if (!translations.en.title && course.title) translations.en.title = course.title
     if (!translations.en.description && course.description) translations.en.description = course.description
     setEditingId(course.id)
     setEditingData({
@@ -333,28 +293,21 @@ export default function CoursesManagement() {
   const saveEdit = async () => {
     if (!editingData) return
     const enTitle = editingData.translations?.en?.title?.trim()
-    if (!enTitle)                         { showError('O título em Inglês é obrigatório'); return }
+    if (!enTitle) { showError('O título em Inglês é obrigatório'); return }
     if (!editingData.college_name.trim()) { showError('O nome da instituição é obrigatório'); return }
     try {
       setSaving(true)
       const { error } = await supabase.from('courses').update({
-        title:           enTitle,
-        college_name:    editingData.college_name,
-        description:     editingData.translations?.en?.description?.trim() || null,
-        importance:      editingData.importance,
-        certificate_url: editingData.certificate_url || null,
-        college_logo:    editingData.college_logo || null,
-        featured:        editingData.featured,
-        completion_date: editingData.completion_date || null,
-        translations:    editingData.translations,
+        title: enTitle, college_name: editingData.college_name,
+        description: editingData.translations?.en?.description?.trim() || null,
+        importance: editingData.importance, certificate_url: editingData.certificate_url || null,
+        college_logo: editingData.college_logo || null, featured: editingData.featured,
+        completion_date: editingData.completion_date || null, translations: editingData.translations,
       }).eq('id', editingData.id)
       if (error) throw error
-
       await saveSkills(editingData.id, editingData.skillIds)
-
       showSuccess('Curso atualizado com sucesso!')
-      cancelEditing()
-      fetchData()
+      cancelEditing(); fetchData()
     } catch {
       showError('Erro ao atualizar curso.')
     } finally {
@@ -365,11 +318,9 @@ export default function CoursesManagement() {
   const handleDelete = async (id: string) => {
     if (!confirm('Tens a certeza que queres eliminar este curso?')) return
     try {
-      // course_skills cascade on delete
       const { error } = await supabase.from('courses').delete().eq('id', id)
       if (error) throw error
-      showSuccess('Curso eliminado com sucesso!')
-      fetchData()
+      showSuccess('Curso eliminado com sucesso!'); fetchData()
     } catch {
       showError('Erro ao eliminar curso')
     }
@@ -385,8 +336,6 @@ export default function CoursesManagement() {
 
   const isCertificatePDF = (url: string | null) => url?.toLowerCase().endsWith('.pdf') ?? false
 
-  // ─── Render ──────────────────────────────────────────────────────────────
-
   if (loading) {
     return (
       <div className="min-h-screen bg-[#E8E2E1] flex items-center justify-center">
@@ -400,7 +349,6 @@ export default function CoursesManagement() {
 
   return (
     <>
-      {/* Certificate modal */}
       {viewingCertificate && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 animate-in fade-in"
           onClick={() => setViewingCertificate(null)}>
@@ -428,7 +376,6 @@ export default function CoursesManagement() {
         <TopBar />
 
         <main className="flex-grow">
-          {/* Hero */}
           <section className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-12 md:py-16 overflow-hidden">
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
               <div className="absolute w-[500px] h-[500px] -top-32 -right-32 bg-orange-600/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
@@ -455,7 +402,6 @@ export default function CoursesManagement() {
           <section className="py-12 md:py-16">
             <div className="container mx-auto px-6 max-w-7xl">
 
-              {/* Messages */}
               {successMessage && (
                 <div className="mb-6 bg-gradient-to-r from-emerald-50 to-emerald-100 border-2 border-emerald-500 rounded-xl p-4 flex items-center gap-3 animate-in fade-in shadow-lg">
                   <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0"><CheckCircle2 className="w-6 h-6 text-white" /></div>
@@ -471,7 +417,6 @@ export default function CoursesManagement() {
 
               <div className="space-y-8">
 
-                {/* ── Courses list ── */}
                 <Card className="border-0 shadow-xl overflow-hidden rounded-2xl">
                   <div className="h-2 bg-gradient-to-r from-slate-600 via-slate-500 to-slate-600" />
                   <CardHeader className="bg-gradient-to-br from-slate-50 to-slate-100 pt-8 pb-6">
@@ -512,13 +457,17 @@ export default function CoursesManagement() {
                                 style={{ animation: 'fadeIn 0.3s ease-in', animationDelay: `${index * 50}ms`, animationFillMode: 'backwards' }}>
 
                                 {editingId === course.id && editingData ? (
-                                  // ── EDITING MODE ──
                                   <>
-                                    {/* Logo */}
+                                    {/* Logo — styled label instead of raw file input */}
                                     <td className="px-6 py-4 align-top">
                                       <div className="space-y-2">
-                                        <Input type="file" accept="image/*" onChange={handleEditLogoUpload} disabled={uploadingLogo}
-                                          className="h-10 border-2 border-orange-600 rounded-lg text-xs file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-orange-700" />
+                                        <label className="flex items-center gap-2 h-10 px-3 border-2 border-orange-600 rounded-lg bg-white cursor-pointer hover:bg-orange-50 transition-colors">
+                                          <ImageIcon className="w-4 h-4 text-orange-600 flex-shrink-0" />
+                                          <span className="text-xs text-orange-700 font-semibold truncate flex-1">
+                                            {editingLogoFile ? editingLogoFile.name : 'Escolher logo...'}
+                                          </span>
+                                          <input type="file" accept="image/*" onChange={handleEditLogoUpload} disabled={uploadingLogo} className="hidden" />
+                                        </label>
                                         {editingData.college_logo && (
                                           <img src={editingData.college_logo} alt="Logo" className="w-12 h-12 object-contain rounded border-2 border-orange-300"
                                             onError={e => { e.currentTarget.style.display = 'none' }} />
@@ -552,15 +501,20 @@ export default function CoursesManagement() {
                                       </div>
                                     </td>
 
-                                    {/* Institution + Certificate */}
+                                    {/* Institution + Certificate — styled label */}
                                     <td className="px-6 py-4 align-top">
                                       <div className="space-y-2 min-w-[180px]">
                                         <Label className="text-xs font-semibold text-slate-600">Instituição <span className="text-slate-400 font-normal">(global)</span></Label>
                                         <Input value={editingData.college_name} onChange={e => setEditingData({ ...editingData, college_name: e.target.value })}
                                           className="h-10 border-2 border-orange-600 rounded-lg" placeholder="Nome da instituição" />
-                                        <Label className="text-xs font-semibold text-slate-600 mt-2">Certificado <span className="text-slate-400 font-normal">(global)</span></Label>
-                                        <Input type="file" accept=".pdf,.jpg,.jpeg,.png,.webp" onChange={handleEditCertificateUpload} disabled={uploadingCertificate}
-                                          className="h-10 border-2 border-orange-600 rounded-lg text-xs file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-orange-700" />
+                                        <Label className="text-xs font-semibold text-slate-600 mt-2 block">Certificado <span className="text-slate-400 font-normal">(global)</span></Label>
+                                        <label className="flex items-center gap-2 h-10 px-3 border-2 border-orange-600 rounded-lg bg-white cursor-pointer hover:bg-orange-50 transition-colors">
+                                          <Award className="w-4 h-4 text-orange-600 flex-shrink-0" />
+                                          <span className="text-xs text-orange-700 font-semibold truncate flex-1">
+                                            {editingCertificateFile ? editingCertificateFile.name : 'Escolher certificado...'}
+                                          </span>
+                                          <input type="file" accept=".pdf,.jpg,.jpeg,.png,.webp" onChange={handleEditCertificateUpload} disabled={uploadingCertificate} className="hidden" />
+                                        </label>
                                         {editingData.certificate_url && (
                                           <div className="flex items-center gap-1">
                                             <Award className="w-3 h-3 text-orange-600 flex-shrink-0" />
@@ -582,7 +536,7 @@ export default function CoursesManagement() {
                                       </div>
                                     </td>
 
-                                    {/* Skills picker — inline */}
+                                    {/* Skills */}
                                     <td className="px-6 py-4 align-top">
                                       <div className="min-w-[220px]">
                                         <SkillsPicker
@@ -623,7 +577,6 @@ export default function CoursesManagement() {
                                     </td>
                                   </>
                                 ) : (
-                                  // ── VIEW MODE ──
                                   <>
                                     <td className="px-6 py-4">
                                       {course.college_logo ? (
@@ -692,7 +645,7 @@ export default function CoursesManagement() {
                   </CardContent>
                 </Card>
 
-                {/* ── Add new course form ── */}
+                {/* Add new course form */}
                 <Card className="border-0 shadow-xl overflow-hidden rounded-2xl">
                   <div className="h-2 bg-gradient-to-r from-orange-600 via-orange-500 to-orange-600" />
                   <CardHeader className="bg-gradient-to-br from-orange-50 to-orange-100 pt-8 pb-6">
@@ -707,12 +660,9 @@ export default function CoursesManagement() {
                     </div>
                   </CardHeader>
                   <CardContent className="p-8 bg-white">
-
                     <LocaleSelector active={activeLocale} onChange={setActiveLocale} fillCount={fillCount} />
-
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-                      {/* Title */}
                       <div className="space-y-2 lg:col-span-2">
                         <Label className="text-slate-900 font-semibold text-sm flex items-center gap-2">
                           Título do Curso {activeLocale === "en" && <span className="text-red-500">*</span>}
@@ -724,7 +674,6 @@ export default function CoursesManagement() {
                         <FallbackHint locale={activeLocale} baseValue={newCourse.translations?.en?.title} />
                       </div>
 
-                      {/* Importance */}
                       <div className="space-y-2">
                         <Label className="text-slate-900 font-semibold text-sm flex items-center gap-2">
                           Importância <span className="text-xs text-slate-400 font-normal">(global)</span>
@@ -736,7 +685,6 @@ export default function CoursesManagement() {
                         </select>
                       </div>
 
-                      {/* College name */}
                       <div className="space-y-2">
                         <Label className="text-slate-900 font-semibold text-sm flex items-center gap-2">
                           Instituição * <span className="text-xs text-slate-400 font-normal">(global)</span>
@@ -747,7 +695,6 @@ export default function CoursesManagement() {
                           className="h-11 border-2 border-slate-300 focus:border-orange-600 rounded-lg" />
                       </div>
 
-                      {/* Completion date */}
                       <div className="space-y-2">
                         <Label className="text-slate-900 font-semibold text-sm flex items-center gap-2">
                           <Calendar className="w-4 h-4 text-orange-600" />
@@ -758,7 +705,6 @@ export default function CoursesManagement() {
                           className="h-11 border-2 border-slate-300 focus:border-orange-600 rounded-lg" />
                       </div>
 
-                      {/* Featured */}
                       <div className="space-y-2 flex items-end">
                         <div className="flex items-center gap-3 h-11">
                           <input type="checkbox" id="featured" checked={newCourse.featured}
@@ -771,7 +717,6 @@ export default function CoursesManagement() {
                         </div>
                       </div>
 
-                      {/* Certificate */}
                       <div className="space-y-2 lg:col-span-2">
                         <Label className="text-slate-900 font-semibold text-sm flex items-center gap-2">
                           <Award className="w-4 h-4 text-orange-600" />
@@ -787,7 +732,6 @@ export default function CoursesManagement() {
                         )}
                       </div>
 
-                      {/* Logo */}
                       <div className="space-y-2">
                         <Label className="text-slate-900 font-semibold text-sm flex items-center gap-2">
                           <ImageIcon className="w-4 h-4 text-orange-600" />
@@ -804,7 +748,6 @@ export default function CoursesManagement() {
                         )}
                       </div>
 
-                      {/* Description */}
                       <div className="space-y-2 lg:col-span-3">
                         <Label className="text-slate-900 font-semibold text-sm flex items-center gap-2">
                           Descrição <LocaleBadge locale={activeLocale} />
@@ -815,7 +758,6 @@ export default function CoursesManagement() {
                         <FallbackHint locale={activeLocale} baseValue={newCourse.translations?.en?.description} />
                       </div>
 
-                      {/* Skills picker */}
                       <div className="lg:col-span-3">
                         <SkillsPicker
                           selectedIds={newCourse.skillIds}

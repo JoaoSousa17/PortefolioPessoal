@@ -39,12 +39,32 @@ export function MarkdownContent({ content, className, variant = 'blog' }: Markdo
           h4: ({ node, ...props }) => (
             <h4 className="text-lg font-semibold text-slate-800 mt-4 mb-2" {...props} />
           ),
-          p: ({ node, ...props }) => (
-            <p
-              className={`text-slate-700 leading-relaxed text-justify mb-5 last:mb-0 ${isBlog ? 'text-lg' : 'text-base'}`}
-              {...props}
-            />
-          ),
+          // Use a div instead of p when children contain a code block (<pre>)
+          // to avoid the invalid HTML nesting <p><pre>...</pre></p>
+          p: ({ node, children, ...props }) => {
+            const hasBlockCode = node?.children?.some(
+              (child: any) => child.type === 'element' && child.tagName === 'code'
+                || child.type === 'element' && child.tagName === 'pre'
+            )
+            if (hasBlockCode) {
+              return (
+                <div
+                  className={`text-slate-700 leading-relaxed text-justify mb-5 last:mb-0 ${isBlog ? 'text-lg' : 'text-base'}`}
+                  {...(props as any)}
+                >
+                  {children}
+                </div>
+              )
+            }
+            return (
+              <p
+                className={`text-slate-700 leading-relaxed text-justify mb-5 last:mb-0 ${isBlog ? 'text-lg' : 'text-base'}`}
+                {...props}
+              >
+                {children}
+              </p>
+            )
+          },
           a: ({ node, ...props }) => (
             <a
               className="text-red-700 hover:text-red-800 hover:underline font-medium transition-colors"
@@ -74,17 +94,27 @@ export function MarkdownContent({ content, className, variant = 'blog' }: Markdo
               {...props}
             />
           ),
-          code: ({ node, inline, ...props }: any) =>
-            inline ? (
+          code: ({ node, inline, className: codeClassName, children, ...props }: any) => {
+            // Block code — rendered as pre>code
+            if (!inline) {
+              return (
+                <pre className="bg-slate-900 text-slate-100 p-5 rounded-xl overflow-x-auto mb-5 text-sm font-mono shadow-lg">
+                  <code className={codeClassName} {...props}>
+                    {children}
+                  </code>
+                </pre>
+              )
+            }
+            // Inline code
+            return (
               <code
                 className="bg-slate-100 text-red-700 px-1.5 py-0.5 rounded text-sm font-mono border border-slate-200"
                 {...props}
-              />
-            ) : (
-              <pre className="bg-slate-900 text-slate-100 p-5 rounded-xl overflow-x-auto mb-5 text-sm font-mono shadow-lg">
-                <code {...props} />
-              </pre>
-            ),
+              >
+                {children}
+              </code>
+            )
+          },
           img: ({ node, ...props }) => (
             <img
               className="rounded-xl shadow-lg my-6 max-w-full h-auto mx-auto block"

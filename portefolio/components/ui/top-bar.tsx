@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -20,28 +20,99 @@ export function TopBar() {
   const { t } = useTranslation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
+  // After navigating from another page, scroll to the saved target section.
+  // Strategy: poll the element's offsetTop until it stabilises for 3 consecutive
+  // checks, then scroll. This handles async content (Supabase fetches, animations,
+  // Spline 3D) that shifts the layout after the initial render.
+  useEffect(() => {
+    const target = sessionStorage.getItem("scrollTarget")
+    if (!target) return
+    sessionStorage.removeItem("scrollTarget")
+
+    const TOPBAR_HEIGHT = 80
+    const STABLE_CHECKS = 3      // how many consecutive equal readings = stable
+    const POLL_INTERVAL = 150    // ms between checks
+    const MAX_WAIT = 8000        // give up after 8s
+
+    let stableCount = 0
+    let lastTop = -1
+    let elapsed = 0
+    let intervalId: ReturnType<typeof setInterval>
+
+    const getTop = () => {
+      const el = document.getElementById(target)
+      if (!el) return null
+      return el.getBoundingClientRect().top + window.pageYOffset - TOPBAR_HEIGHT
+    }
+
+    const doScroll = (top: number) => {
+      window.scrollTo({ top, behavior: "smooth" })
+    }
+
+    intervalId = setInterval(() => {
+      elapsed += POLL_INTERVAL
+
+      const top = getTop()
+
+      if (top === null) {
+        // Element not in DOM yet — keep waiting
+        stableCount = 0
+        lastTop = -1
+      } else if (Math.abs(top - lastTop) < 2) {
+        // Position hasn't changed meaningfully
+        stableCount++
+        if (stableCount >= STABLE_CHECKS) {
+          // Layout is stable — scroll now
+          clearInterval(intervalId)
+          doScroll(top)
+        }
+      } else {
+        // Position changed — reset stability counter
+        stableCount = 0
+        lastTop = top
+      }
+
+      if (elapsed >= MAX_WAIT) {
+        clearInterval(intervalId)
+        const fallback = getTop()
+        if (fallback !== null) doScroll(fallback)
+      }
+    }, POLL_INTERVAL)
+
+    return () => clearInterval(intervalId)
+  }, [])
+
   const navButtonClass = 
     "text-slate-300 hover:text-white hover:bg-white/10 font-medium transition-all duration-200"
 
   function scrollToSection(href: string) {
     if (href.startsWith("#")) {
-      const element = document.querySelector(href)
-      if (element) {
-        const offset = 80
-        const elementPosition = element.getBoundingClientRect().top
-        const offsetPosition = elementPosition + window.pageYOffset - offset
-
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: "smooth"
-        })
+      const isHome = window.location.pathname === "/"
+      if (isHome) {
+        // Already on home — smooth scroll
+        const element = document.querySelector(href)
+        if (element) {
+          const offset = 80
+          const offsetPosition = element.getBoundingClientRect().top + window.pageYOffset - offset
+          window.scrollTo({ top: offsetPosition, behavior: "smooth" })
+        }
+      } else {
+        // Navigate to home, then scroll after page loads
+        const sectionId = href.replace("#", "")
+        sessionStorage.setItem("scrollTarget", sectionId)
+        window.location.href = "/"
       }
     }
     setMobileMenuOpen(false)
   }
 
   function scrollToTop() {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    const isHome = window.location.pathname === "/"
+    if (isHome) {
+      window.scrollTo({ top: 0, behavior: "smooth" })
+    } else {
+      window.location.href = "/"
+    }
     setMobileMenuOpen(false)
   }
 
@@ -87,7 +158,7 @@ export function TopBar() {
           <div className="flex items-center gap-2">
             <Languages className="w-4 h-4 text-slate-400 hidden sm:block" />
             <Select value={language} onValueChange={setLanguage}>
-              <SelectTrigger className="w-[90px] sm:w-[100px] h-9 bg-slate-800 border-slate-700 text-white hover:bg-slate-750 transition-colors focus:ring-red-500/50">
+              <SelectTrigger className="w-[95px] sm:w-[110px] h-9 bg-slate-800 border-slate-700 text-white hover:bg-slate-750 transition-colors focus:ring-red-500/50">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-slate-800 border-slate-700">
@@ -97,8 +168,8 @@ export function TopBar() {
                     value={lang.code}
                     className="text-white focus:bg-slate-700 focus:text-white cursor-pointer"
                   >
-                    <span className="flex items-center gap-2">
-                      <span className="text-base">{lang.flag}</span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="text-sm">{lang.flag}</span>
                       <span>{lang.label}</span>
                     </span>
                   </SelectItem>
