@@ -217,8 +217,7 @@ export default function ProjectDetailPage() {
 
               {longDescription && (
                 <Card className="bg-white border-0 shadow-lg sm:shadow-xl p-5 sm:p-8 md:p-12">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-4 sm:mb-6">{t.projectDetail.about}</h2>
-                  <Separator className="mb-6 sm:mb-8" />
+                  <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-4 pb-0 sm:mb-6">{t.projectDetail.about}</h2>
                   <MarkdownContent content={longDescription} variant="blog" />
                 </Card>
               )}
