@@ -1,12 +1,12 @@
+// proxy.ts (na raiz do projeto)
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-
-  // Never intercept these paths
+  // 1. Exceções (Caminhos que nunca são interceptados)
   if (
     pathname.startsWith("/maintance") ||
     pathname.startsWith("/auth") ||
@@ -17,10 +17,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Check admin cookie — allow through everything if logged in
+  // 2. Lógica de Autenticação Admin
   const isAdmin = request.cookies.get("admin_authenticated")?.value === "true"
 
-  // Admin route guard
   if (pathname.startsWith("/admin")) {
     if (!isAdmin) {
       return NextResponse.redirect(new URL("/auth", request.url))
@@ -28,43 +27,40 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Admin logged in → bypass maintenance/construction
-  if (isAdmin) {
-    return NextResponse.next()
-  }
+  if (isAdmin) return NextResponse.next()
 
-  // Check site status for regular visitors
+  // 3. Verificação de Status do Site (Supabase)
   try {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("site_status")
       .select("under_construction, under_maintenance")
       .limit(1)
       .single()
 
-    if (data?.under_maintenance) {
-      const url = new URL("/maintance", request.url)
-      const res = NextResponse.rewrite(url)
-      res.cookies.set("x-site-mode", "maintenance", { path: "/", maxAge: 60, httpOnly: false })
-      return res
-    }
+    if (error) throw error
 
-    if (data?.under_construction) {
+    if (data?.under_maintenance || data?.under_construction) {
+      const mode = data.under_maintenance ? "maintenance" : "construction"
       const url = new URL("/maintance", request.url)
+      
+      // No novo padrão Proxy, o rewrite é a forma recomendada de manter a URL
       const res = NextResponse.rewrite(url)
-      res.cookies.set("x-site-mode", "construction", { path: "/", maxAge: 60, httpOnly: false })
+      res.cookies.set("x-site-mode", mode, { path: "/", maxAge: 60 })
       return res
     }
   } catch (e) {
+    console.error("Proxy Error:", e)
   }
 
   return NextResponse.next()
 }
 
+// O Matcher permanece igual
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 }

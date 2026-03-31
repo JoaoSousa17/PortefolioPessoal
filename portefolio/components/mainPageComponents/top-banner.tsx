@@ -8,12 +8,16 @@ import Link from "next/link"
 import { useTranslation } from "@/lib/hooks/useTranslation"
 
 export function TopBanner() {
-  const { t } = useTranslation()
+  const { t, language } = useTranslation()
 
   const [mounted, setMounted] = useState(false)
   const [currentRole, setCurrentRole] = useState(0)
   
   const roles = t.topBanner.roles
+
+  const cvPath = language === 'pt'
+    ? '/curriculos/curriculo.pdf'
+    : '/curriculos/curriculo_en.pdf'
 
   useEffect(() => {
     setMounted(true)
@@ -118,12 +122,6 @@ export function TopBanner() {
               </cite>
             </blockquote>
 
-            {/*
-              Button layout:
-              - mobile/sm: tudo em coluna
-              - md (tablet): CTA buttons em linha, social na linha seguinte
-              - lg+: tudo numa só linha (CTA + social com ml-auto)
-            */}
             <div className="flex flex-col lg:flex-row lg:items-center items-center md:items-start gap-4 pt-6 lg:flex-wrap">
 
               {/* CTA buttons */}
@@ -144,7 +142,7 @@ export function TopBanner() {
                   className="w-full sm:w-auto bg-white hover:bg-gray-50 text-red-800 text-xl font-bold px-10 py-7 shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-[0_12px_48px_rgba(0,0,0,0.4)] transition-all duration-200 group border-4 border-white hover:scale-105"
                   asChild
                 >
-                  <a href={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/cvs/curriculo.pdf`} target="_blank">
+                  <a href={cvPath} target="_blank">
                     {t.topBanner.downloadCv}
                     <Download className="ml-2 w-6 h-6 group-hover:translate-y-1 transition-transform duration-200" />
                   </a>
