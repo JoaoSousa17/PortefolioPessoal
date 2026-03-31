@@ -9,8 +9,12 @@ import Link from "next/link"
 import { useTranslation } from "@/lib/hooks/useTranslation"
 
 export function Footer() {
-  const { t } = useTranslation()
+  const { t, language } = useTranslation()
   const [profile, setProfile] = useState<Profile | null>(null)
+
+  const cvPath = language === 'pt'
+    ? '/curriculos/curriculo.pdf'
+    : '/curriculos/curriculo_en.pdf'
 
   useEffect(() => {
     fetchProfile()
@@ -86,7 +90,7 @@ export function Footer() {
               asChild
               className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300 group mt-6"
             >
-              <a href={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/cvs/curriculo.pdf`} target="_blank" rel="noopener noreferrer">
+              <a href={cvPath} target="_blank" rel="noopener noreferrer">
                 <FileText className="w-4 h-4 mr-2" />
                 {t.footer.about.downloadCV}
                 <Download className="w-4 h-4 ml-2 group-hover:translate-y-1 transition-transform" />
