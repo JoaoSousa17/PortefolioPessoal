@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { LanguageProvider } from "../lib/context/LanguageContext";
+import { Analytics } from "@vercel/analytics/next"
 import Script from "next/script"; // 1. Importa o componente de Script
 import "./globals.css";
 
@@ -47,6 +48,7 @@ export default function RootLayout({
 
         <LanguageProvider>
           {children}
+          <Analytics />
         </LanguageProvider>
       </body>
     </html>
