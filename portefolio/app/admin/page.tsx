@@ -34,6 +34,7 @@ import {
 import { supabase } from "@/lib/supabase"
 import AnalyticsDashboard from "@/components/admin/AnalyticsDashboard"
 import { KeepAliveBots } from "@/components/admin/KeepAliveBots"
+import { AirbnbCalendarBot } from "@/components/admin/AirbnbCalendarBot"
 import { TopBar } from "@/components/ui/top-bar"
 import { Footer } from "@/components/ui/footer"
 import Link from "next/link"
@@ -358,6 +359,11 @@ export default function AdminDashboard() {
             {/* Keepalive Bots */}
             <div className="mt-8 animate-in fade-in slide-in-from-bottom" style={{ animationDelay: "300ms" }}>
               <KeepAliveBots />
+            </div>
+
+            {/* Airbnb Calendar Sync Bot */}
+            <div className="mt-8 animate-in fade-in slide-in-from-bottom" style={{ animationDelay: "320ms" }}>
+              <AirbnbCalendarBot />
             </div>
 
             <div className="mt-8 text-center animate-in fade-in" style={{ animationDelay: "350ms" }}>
