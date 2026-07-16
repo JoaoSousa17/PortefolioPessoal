@@ -36,7 +36,7 @@ export async function GET(request: Request) {
 
   for (const bot of bots ?? []) {
     try {
-      const blockedDates = await fetchBlockedDates(bot.room_id)
+      const blockedDates = await fetchBlockedDates(bot.room_id, bot.listing_url)
       const ics = buildIcsForBlockedDates(`Airbnb - ${bot.name}`, bot.event_title || "Casa Ocupada", blockedDates)
 
       await supabase

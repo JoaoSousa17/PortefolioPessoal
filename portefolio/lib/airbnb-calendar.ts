@@ -1,100 +1,89 @@
-// Best-effort scraper for a public Airbnb listing's availability calendar.
+// Reads a public Airbnb listing's availability calendar via the same
+// internal GraphQL endpoint the listing page calls when you open the
+// "check availability" date picker (PdpAvailabilityCalendar). It's
+// unauthenticated (no cookies/login involved) but unofficial, so it depends
+// on two values Airbnb can rotate when they redeploy their frontend:
+//   - X-Airbnb-API-Key: a public client identifier (not a secret credential)
+//   - the persisted-query sha256 hash in the request URL
 //
-// There is no official public API for this (the real iCal export needs the
-// host's account), so this reads the same JSON payload the listing page
-// embeds for its own booking widget. Airbnb changes this markup from time to
-// time — if the bot starts failing, open the listing in a browser, view the
-// page source, and check that a `<script type="application/json">` blob
-// still contains day objects shaped like { calendarDate/date, available }.
-
-const DATE_KEYS = ["calendarDate", "date", "day"]
-const AVAILABLE_KEYS = ["available", "availableForCheckin", "availableForCheckout", "bookable"]
-const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
+// If the bot starts failing with a "PersistedQueryNotFound"-style error,
+// both values need refreshing. To get new ones: open the listing in Chrome,
+// DevTools → Network → XHR/Fetch, open the availability calendar popup,
+// find the "PdpAvailabilityCalendar" request, and copy the hash from its URL
+// and the X-Airbnb-API-Key header from its request headers.
+const AIRBNB_API_KEY = process.env.AIRBNB_API_KEY || "d306zoyjsyarp7ifhu67rjxn52tv0t20"
+const PERSISTED_QUERY_HASH = process.env.AIRBNB_PERSISTED_QUERY_HASH || "be60714ead0a30db42ce6471ddad6a8f3855df0ed400b79282dd0bb8cecdf201"
 
 export function extractRoomId(listingUrl: string): string | null {
   const match = listingUrl.match(/\/rooms\/(\d+)/)
   return match ? match[1] : null
 }
 
-function walkForCalendarDays(node: unknown, out: Map<string, boolean>, depth = 0) {
-  if (depth > 40 || node === null || typeof node !== "object") return
-
-  if (Array.isArray(node)) {
-    for (const item of node) walkForCalendarDays(item, out, depth + 1)
-    return
-  }
-
-  const obj = node as Record<string, unknown>
-
-  let date: string | null = null
-  for (const key of DATE_KEYS) {
-    const val = obj[key]
-    if (typeof val === "string" && DATE_RE.test(val)) { date = val; break }
-  }
-
-  if (date) {
-    for (const key of AVAILABLE_KEYS) {
-      if (typeof obj[key] === "boolean") {
-        // Only the first match wins per date so later, less-specific
-        // objects in the payload don't overwrite a confirmed value.
-        if (!out.has(date)) out.set(date, obj[key] as boolean)
-        break
-      }
-    }
-  }
-
-  for (const key in obj) walkForCalendarDays(obj[key], out, depth + 1)
+function todayIso(): string {
+  return new Date().toISOString().slice(0, 10)
 }
 
-function extractJsonBlobs(html: string): unknown[] {
-  const blobs: unknown[] = []
-  const scriptRe = /<script[^>]+type="application\/json"[^>]*>([\s\S]*?)<\/script>/g
-  let match: RegExpExecArray | null
-  while ((match = scriptRe.exec(html)) !== null) {
-    try {
-      blobs.push(JSON.parse(match[1]))
-    } catch {
-      // Not valid standalone JSON (or truncated) — skip it.
-    }
-  }
-  return blobs
-}
+export async function fetchBlockedDates(roomId: string, listingUrl: string): Promise<string[]> {
+  let host = "www.airbnb.com"
+  try { host = new URL(listingUrl).host } catch { /* fall back to .com */ }
 
-export async function fetchBlockedDates(roomId: string): Promise<string[]> {
-  const url = `https://www.airbnb.com/rooms/${roomId}`
-  const res = await fetch(url, {
-    headers: {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-      "Accept-Language": "pt-PT,pt;q=0.9,en;q=0.8",
-      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+  const now = new Date()
+  const variables = {
+    request: {
+      count: 12,
+      listingId: roomId,
+      month: now.getUTCMonth() + 1,
+      year: now.getUTCFullYear(),
+      returnPropertyLevelCalendarIfApplicable: false,
     },
-    // Airbnb's PDP is heavy — give it real time to arrive.
+  }
+  const extensions = { persistedQuery: { version: 1, sha256Hash: PERSISTED_QUERY_HASH } }
+
+  const url = new URL(`https://${host}/api/v3/PdpAvailabilityCalendar/${PERSISTED_QUERY_HASH}`)
+  url.searchParams.set("operationName", "PdpAvailabilityCalendar")
+  url.searchParams.set("locale", "pt-PT")
+  url.searchParams.set("currency", "EUR")
+  url.searchParams.set("variables", JSON.stringify(variables))
+  url.searchParams.set("extensions", JSON.stringify(extensions))
+
+  const res = await fetch(url.toString(), {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
+      "Accept": "*/*",
+      "Referer": listingUrl,
+      "X-Airbnb-API-Key": AIRBNB_API_KEY,
+      "X-CSRF-Without-Token": "1",
+    },
     signal: AbortSignal.timeout(20000),
   })
 
   if (!res.ok) {
-    throw new Error(`Airbnb devolveu HTTP ${res.status} ao carregar o anúncio`)
+    throw new Error(`Airbnb devolveu HTTP ${res.status} ao consultar o calendário`)
   }
 
-  const html = await res.text()
-  const blobs = extractJsonBlobs(html)
-  if (blobs.length === 0) {
-    throw new Error("Não foi possível encontrar dados estruturados na página do anúncio (o Airbnb pode ter mudado o layout)")
+  const json = await res.json()
+
+  if (json?.errors?.length) {
+    const msg = json.errors[0]?.message ?? "erro desconhecido"
+    throw new Error(`Airbnb API: ${msg} (o hash da query ou a API key podem ter expirado — captura um novo pedido de rede)`)
   }
 
-  const days = new Map<string, boolean>()
-  for (const blob of blobs) walkForCalendarDays(blob, days)
-
-  if (days.size === 0) {
-    throw new Error("Dados encontrados na página, mas nenhum calendário de disponibilidade (o Airbnb pode ter mudado a estrutura)")
+  const months = json?.data?.merlin?.pdpAvailabilityCalendar?.calendarMonths
+  if (!Array.isArray(months)) {
+    throw new Error("Resposta inesperada da API do Airbnb (a estrutura pode ter mudado)")
   }
 
-  const blocked = [...days.entries()]
-    .filter(([, available]) => available === false)
-    .map(([date]) => date)
-    .sort()
+  const today = todayIso()
+  const blocked: string[] = []
+  for (const month of months) {
+    for (const day of month?.days ?? []) {
+      if (day?.available === false && typeof day.calendarDate === "string" && day.calendarDate >= today) {
+        blocked.push(day.calendarDate)
+      }
+    }
+  }
 
-  return blocked
+  return blocked.sort()
 }
 
 export function buildIcsForBlockedDates(calendarName: string, eventTitle: string, blockedDates: string[]): string {
