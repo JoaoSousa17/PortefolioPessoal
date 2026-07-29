@@ -8,6 +8,8 @@
 //   E (index 4) = event name (SUMMARY)
 //   F (index 5) = notes / people (DESCRIPTION)
 
+import { TRIP_CALENDAR_EXPIRES_ON } from "@/lib/trip-calendar-config"
+
 const SPREADSHEET_ID = "1e0hUOhFLVlffxh26_rPH73nybRgKnWko9hgn7i36Hd0"
 
 const SHEET_NAMES = [
@@ -162,10 +164,16 @@ function escapeIcsText(text: string): string {
   return text.replace(/[\\,;]/g, (c) => `\\${c}`).replace(/\n/g, "\\n")
 }
 
+function isExpired(): boolean {
+  return new Date().toISOString().slice(0, 10) >= TRIP_CALENDAR_EXPIRES_ON
+}
+
 export async function buildTripCalendarIcs(): Promise<string> {
   const allEvents: TripEvent[] = []
-  for (const sheetName of SHEET_NAMES) {
-    allEvents.push(...await fetchSheetEvents(sheetName))
+  if (!isExpired()) {
+    for (const sheetName of SHEET_NAMES) {
+      allEvents.push(...await fetchSheetEvents(sheetName))
+    }
   }
 
   const lines: string[] = [
@@ -174,8 +182,10 @@ export async function buildTripCalendarIcs(): Promise<string> {
     "PRODID:-//PortefolioPessoal//Trip Calendar Sync//PT",
     "CALSCALE:GREGORIAN",
     "X-WR-CALNAME:Viagem - Itinerário",
-    "REFRESH-INTERVAL;VALUE=DURATION:PT4H",
-    "X-PUBLISHED-TTL:PT4H",
+    // Hints for calendar clients that honor it (iOS enforces its own
+    // minimum poll interval regardless, usually not shorter than this).
+    "REFRESH-INTERVAL;VALUE=DURATION:PT30M",
+    "X-PUBLISHED-TTL:PT30M",
   ]
 
   const stamp = new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z"
