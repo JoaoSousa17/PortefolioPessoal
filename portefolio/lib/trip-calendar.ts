@@ -1,16 +1,24 @@
-// Reads itinerary rows from public Google Sheets tabs (via the gviz CSV
-// export, no Apps Script / API key needed) and turns them into an .ics feed.
+// Hardcoded for one specific trip itinerary spreadsheet — reads 5 day tabs
+// straight from Google's public gviz CSV export (no Apps Script, no API
+// key, no database) and builds an .ics feed on every request.
 //
 // Fixed column layout (row 1 = header, data starts row 2):
 //   B (index 1) = start date/time
 //   C (index 2) = end date/time
 //   E (index 4) = event name (SUMMARY)
 //   F (index 5) = notes / people (DESCRIPTION)
-//
-// Each sheet tab is expected to carry a specific day in its name (e.g.
-// "DAY 11 - August 3"). If a start/end cell only contains a time (no date —
-// common when a spreadsheet has one tab per day), the date is taken from
-// that sheet's name combined with the bot's configured year.
+
+const SPREADSHEET_ID = "1e0hUOhFLVlffxh26_rPH73nybRgKnWko9hgn7i36Hd0"
+
+const SHEET_NAMES = [
+  "DAY 11 - August 3",
+  "DAY 12 - August 4",
+  "DAY 13 - August 5",
+  "DAY 14 - August 6",
+  "DAY 15 - August 7",
+]
+
+const YEAR = 2026
 
 const COL_START = 1
 const COL_END = 2
@@ -22,22 +30,8 @@ const MONTH_NAMES: Record<string, number> = {
   july: 7, august: 8, september: 9, october: 10, november: 11, december: 12,
 }
 
-export type SheetEvent = {
-  uid: string
-  summary: string
-  description: string
-  start: DateParts
-  end: DateParts
-}
-
 type DateParts = { year: number; month: number; day: number; hour: number; minute: number; second: number }
-
-export function extractSpreadsheetId(input: string): string | null {
-  const urlMatch = input.match(/\/d\/([a-zA-Z0-9-_]+)/)
-  if (urlMatch) return urlMatch[1]
-  if (/^[a-zA-Z0-9-_]{20,}$/.test(input.trim())) return input.trim()
-  return null
-}
+type TripEvent = { uid: string; summary: string; description: string; start: DateParts; end: DateParts }
 
 // Minimal RFC 4180 CSV parser: handles quoted fields, embedded commas,
 // escaped quotes ("") and quoted newlines - which Google's gviz CSV uses.
@@ -85,8 +79,8 @@ function extractDayFromSheetName(sheetName: string): { month: number; day: numbe
 
 // Accepts either a full date+time string ("8/3/2026 14:00:00", ISO, etc.)
 // or a time-only string ("14:00", "14:00:00", "2:00 PM"), in which case it
-// falls back to the day parsed from the sheet's tab name + the bot's year.
-function parseCellDateTime(raw: string, fallbackDay: { month: number; day: number } | null, year: number): DateParts | null {
+// falls back to the day parsed from the sheet's tab name + YEAR.
+function parseCellDateTime(raw: string, fallbackDay: { month: number; day: number } | null): DateParts | null {
   const value = raw.trim()
   if (!value) return null
 
@@ -98,7 +92,7 @@ function parseCellDateTime(raw: string, fallbackDay: { month: number; day: numbe
     const meridiem = timeOnly[4]?.toLowerCase()
     if (meridiem === "pm" && hour < 12) hour += 12
     if (meridiem === "am" && hour === 12) hour = 0
-    return { year, month: fallbackDay.month, day: fallbackDay.day, hour, minute, second }
+    return { year: YEAR, month: fallbackDay.month, day: fallbackDay.day, hour, minute, second }
   }
 
   const parsed = new Date(value)
@@ -116,23 +110,23 @@ function parseCellDateTime(raw: string, fallbackDay: { month: number; day: numbe
   return null
 }
 
-export async function fetchSheetEvents(spreadsheetId: string, sheetName: string, year: number): Promise<SheetEvent[]> {
-  const url = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`
+async function fetchSheetEvents(sheetName: string): Promise<TripEvent[]> {
+  const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`
   const res = await fetch(url, { signal: AbortSignal.timeout(20000) })
 
   if (!res.ok) {
-    throw new Error(`Google Sheets devolveu HTTP ${res.status} para a folha "${sheetName}" (confirma que está partilhada como "Qualquer pessoa com o link pode ver")`)
+    throw new Error(`Google Sheets devolveu HTTP ${res.status} para a folha "${sheetName}"`)
   }
 
   const text = await res.text()
   if (text.trim().startsWith("<")) {
-    throw new Error(`A folha "${sheetName}" não devolveu CSV (provavelmente não está publicamente acessível)`)
+    throw new Error(`A folha "${sheetName}" não devolveu CSV (confirma que a folha está partilhada como "Qualquer pessoa com o link pode ver")`)
   }
 
   const rows = parseCsv(text).slice(1) // skip header row
   const fallbackDay = extractDayFromSheetName(sheetName)
 
-  const events: SheetEvent[] = []
+  const events: TripEvent[] = []
   rows.forEach((row, i) => {
     const summary = (row[COL_SUMMARY] ?? "").trim()
     const description = (row[COL_DESCRIPTION] ?? "").trim()
@@ -140,12 +134,12 @@ export async function fetchSheetEvents(spreadsheetId: string, sheetName: string,
     const rawEnd = row[COL_END] ?? ""
     if (!summary || !rawStart.trim() || !rawEnd.trim()) return
 
-    const start = parseCellDateTime(rawStart, fallbackDay, year)
-    const end = parseCellDateTime(rawEnd, fallbackDay, year)
+    const start = parseCellDateTime(rawStart, fallbackDay)
+    const end = parseCellDateTime(rawEnd, fallbackDay)
     if (!start || !end) return
 
     events.push({
-      uid: `sheet-${spreadsheetId}-${sheetName}-${i}`.replace(/[^a-zA-Z0-9-]/g, "_"),
+      uid: `trip-${sheetName}-${i}`.replace(/[^a-zA-Z0-9-]/g, "_"),
       summary,
       description,
       start,
@@ -164,20 +158,29 @@ function formatFloatingDateTime(d: DateParts): string {
   return `${d.year}${pad(d.month)}${pad(d.day)}T${pad(d.hour)}${pad(d.minute)}${pad(d.second)}`
 }
 
-export function buildIcsForEvents(calendarName: string, events: SheetEvent[]): string {
+function escapeIcsText(text: string): string {
+  return text.replace(/[\\,;]/g, (c) => `\\${c}`).replace(/\n/g, "\\n")
+}
+
+export async function buildTripCalendarIcs(): Promise<string> {
+  const allEvents: TripEvent[] = []
+  for (const sheetName of SHEET_NAMES) {
+    allEvents.push(...await fetchSheetEvents(sheetName))
+  }
+
   const lines: string[] = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//PortefolioPessoal//Sheets Calendar Sync//PT",
+    "PRODID:-//PortefolioPessoal//Trip Calendar Sync//PT",
     "CALSCALE:GREGORIAN",
-    `X-WR-CALNAME:${escapeIcsText(calendarName)}`,
+    "X-WR-CALNAME:Viagem - Itinerário",
     "REFRESH-INTERVAL;VALUE=DURATION:PT4H",
     "X-PUBLISHED-TTL:PT4H",
   ]
 
   const stamp = new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z"
 
-  for (const ev of events) {
+  for (const ev of allEvents) {
     lines.push(
       "BEGIN:VEVENT",
       `UID:${ev.uid}@portefoliopessoal`,
@@ -195,8 +198,4 @@ export function buildIcsForEvents(calendarName: string, events: SheetEvent[]): s
 
   lines.push("END:VCALENDAR")
   return lines.join("\r\n")
-}
-
-function escapeIcsText(text: string): string {
-  return text.replace(/[\\,;]/g, (c) => `\\${c}`).replace(/\n/g, "\\n")
 }
